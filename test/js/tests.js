@@ -5,6 +5,7 @@
     'interpolation.js',
     'property-interpolation.js',
     'animation-node.js',
+    'transform-interpolation.js',
   ];
 
   var scripts = document.getElementsByTagName('script');
