@@ -12,9 +12,9 @@
 //     See the License for the specific language governing permissions and
 // limitations under the License.
 
-(function(scope, testing) {
+(function(shared, scope, testing) {
 
-  function AnimationPlayerEvent(target, currentTime, timelineTime) {
+  shared.AnimationPlayerEvent = function(target, currentTime, timelineTime) {
     this.target = target;
     this.currentTime = currentTime;
     this.timelineTime = timelineTime;
@@ -30,7 +30,7 @@
 
   var sequenceNumber = 0;
 
-  scope.Player = function(source) {
+  global.Player = function(source) {
     this.__currentTime = 0;
     this._startTime = null;
     this._source = source;
@@ -41,15 +41,79 @@
     this._finishedFlag = false;
     this.onfinish = null;
     this._finishHandlers = [];
+    this._startOffset = 0;
+    this._parent = null;
+    // this._parentOffset = 0;
   };
 
-  scope.Player.prototype = {
+  global.Player.prototype = {
+    setPlaybackRate: function(newRate) {
+      var previousTime = this.currentTime;
+      this._playbackRate = newRate;
+      this.currentTime = previousTime;
+    },
+    setCurrentTime: function(newTime) {
+      if (!this.paused)
+        this.startTime += (this.currentTime - newTime) / this.playbackRate;
+      this._currentTime = newTime - this.offset;
+    },
+    getTotalDuration: function() {
+      return this._source.totalDuration;
+    },
+    // TODO: Rename these with underscores
+    isFinished: function() {
+      return this._playbackRate > 0 && this.__currentTime >= this.totalDuration ||
+       this._playbackRate < 0 && this.__currentTime <= 0;
+    },
+    setStartTime: function(newTime) {
+      if (!this.paused)
+        this._startTime = newTime + this.offset;
+    },
+    pausePlayer: function() {
+      this.paused = true;
+      this._startTime = null;
+    },
+    playPlayer: function() {
+      this.paused = false;
+      if (this.finished)
+        this.__currentTime = this._playbackRate > 0 ? 0 : this.totalDuration;
+      this.startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
+      this._finishedFlag = false;
+      shared.restart();
+
+      // FIXME: FROM HEAD PROBABLY WANT TO TO USE THIS
+      // this.paused = false;
+      // if (this.finished)
+      //   this.__currentTime = this._playbackRate > 0 ? 0 : this._source.totalDuration;
+      // this._finishedFlag = false;
+      // if (!scope.restart())
+      //   this._startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
+    },
+    reversePlayer: function() {
+      this._playbackRate *= -1;
+      if (this._finishedFlag)
+        this._startTime = this._timeline.currentTime - this.offset - this._timeline.currentTime / this._playbackRate;
+      else
+        this._startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
+      shared.restart();
+      if (!this._inTimeline) {
+        this._inTimeline = true;
+        document.timeline.players.push(this);
+      }
+      this._finishedFlag = false;
+    },
+    // FIXME: If this function is only used once, move inline in caller.
+    absorbMethods: function(newMethods) {
+      for (var method in newMethods)
+        if (newMethods.hasOwnProperty(method))
+          this[method] = newMethods[method].bind(this);
+    },
     get currentTime() { return this.__currentTime; },
     set _currentTime(newTime) {
       if (newTime != this.__currentTime) {
         this.__currentTime = newTime;
         if (this.finished)
-          this.__currentTime = this._playbackRate > 0 ? this._source.totalDuration : 0;
+          this.__currentTime = this._playbackRate > 0 ? this.totalDuration : 0;
         this._inEffect = this._source(this.__currentTime);
         if (!this._inTimeline && this._inEffect) {
           this._inTimeline = true;
@@ -58,15 +122,19 @@
       }
     },
     get playbackRate() { return this._playbackRate; },
+    // TODO: Implement for groups
+    set playbackRate(newRate) {
+      // var previousTime = this.currentTime;
+      // this._playbackRate = newRate;
+      // this.currentTime = previousTime;
+      this.setPlaybackRate(newRate);
+    },
+    // ODOT
     set currentTime(newTime) {
-      this._currentTime = newTime;
-      if (!this.paused) {
-        this._startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
-      }
+      this.setCurrentTime(newTime);
     },
     get finished() {
-      return this._playbackRate > 0 && this.__currentTime >= this._source.totalDuration ||
-             this._playbackRate < 0 && this.__currentTime <= 0;
+      return this.isFinished();
     },
     get startTime() {
       if (!this.paused && this._startTime == null)
@@ -74,42 +142,38 @@
       return this._startTime;
     },
     set startTime(newTime) {
-      if (this.paused) {
-        return;
-      }
-      this._startTime = newTime;
-      this._currentTime = this._timeline.currentTime - newTime;
+      this.setStartTime(newTime);
+    },
+    get totalDuration() { return this.getTotalDuration(); },
+    // FIXME: This walks the animation tree to calculate offsets.
+    // It makes offsets resilient to tree surgery, except removing animations from a sequence.
+    // Do we want to pre-compute this, and re-compute upon surgery? Do we want to go further
+    // In this direction and calculate all offsets every time (i.e. calculate offsets within a sequence).
+    get offset() { 
+      if (this._parent)
+        return this._startOffset + this._parent._startOffset;
+      else
+        return this._startOffset;
     },
     pause: function() {
-      this.paused = true;
-      this._startTime = null;
+      this.pausePlayer();
     },
     play: function() {
-      this.paused = false;
-      if (this.finished)
-        this.__currentTime = this._playbackRate > 0 ? 0 : this._source.totalDuration;
-      this._finishedFlag = false;
-      if (!scope.restart())
-        this._startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
+      this.playPlayer();
     },
     reverse: function() {
-      this._playbackRate *= -1;
-      this._startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
-      scope.restart();
-      if (!this._inTimeline) {
-        this._inTimeline = true;
-        document.timeline.players.push(this);
-      }
-      this._finishedFlag = false;
+      this.reversePlayer();
     },
+    // TODO: Implement for groups
     finish: function() {
-      this.currentTime = this._playbackRate > 0 ? this._source.totalDuration : 0;
+      this.currentTime = this._playbackRate > 0 ? this.totalDuration : 0;
     },
     cancel: function() {
       this._source = function() { };
       this._source.totalDuration = 0;
       this.currentTime = 0;
     },
+    // OTOD
     addEventListener: function(type, handler) {
       if (typeof handler == 'function' && type == 'finish')
         this._finishHandlers.push(handler);
@@ -124,7 +188,7 @@
     _fireEvents: function() {
       var finished = this.finished;
       if (finished && !this._finishedFlag) {
-        var event = new AnimationPlayerEvent(this, this.currentTime, document.timeline.currentTime);
+        var event = new shared.AnimationPlayerEvent(this, this.currentTime, document.timeline.currentTime);
         var handlers = this._finishHandlers.concat(this.onfinish ? [this.onfinish] : []);
         setTimeout(function() {
           handlers.forEach(function(handler) {
@@ -136,4 +200,4 @@
     },
   };
 
-})(minifill, testing);
+})(shared, minifill, testing);

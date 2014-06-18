@@ -12,7 +12,7 @@
 //     See the License for the specific language governing permissions and
 // limitations under the License.
 
-(function(shared, testing) {
+(function(shared, scope, testing) {
 
   function KeyframeEffect(effect) {
     this._frames = shared.normalizeKeyframes(effect);
@@ -33,20 +33,63 @@
     else
       this.effect = new KeyframeEffect(effect);
     this._effect = effect;
+    this.__player = null;
+    this._player = null;
     return this;
+    };
+
+  global.Animation.prototype = {
+    get player() { return this._player; },
   };
 
   global.document.timeline.play = function(source) {
-    var player = source.target.animate(source._effect, source.timing);
-    // TODO: make source setter call cancel.
-    player.source = source;
-    var cancel = player.cancel.bind(player);
-    player.cancel = function() {
-      player.source = null;
-      cancel();
-    };
-    return player;
-  };
+    if (source instanceof global.Animation) {
+      var player = source.target.animate(source._effect, source.timing);
+      source.__player = player;
+      source._player = source._player || player;
+      // TODO: make source setter call cancel.
+      player.source = source;
+      var cancel = player.cancel.bind(player);
+      player.cancel = function() {
+        player.source = null;
+        cancel();
+      };
+      return player;
+    }
+    // FIXME: Move this code out of this module
+    if (source instanceof global.AnimationSequence || source instanceof global.AnimationGroup) {
+      var player = global.document.timeline.play(new Animation(document.documentElement, []));
+      // player.setPlaybackRate = maxifill.groupPlayer.setPlaybackRate.bind(player);
+      // player.setCurrentTime = maxifill.groupPlayer.setCurrentTime.bind(player);
+      // player.getTotalDuration = maxifill.groupPlayer.getTotalDuration.bind(player);
+      // player.isFinished = maxifill.groupPlayer.isFinished.bind(player);
+      // player.setStartTime = maxifill.groupPlayer.setStartTime.bind(player);
+      // player.pausePlayer = maxifill.groupPlayer.pausePlayer.bind(player);
+      // player.playPlayer = maxifill.groupPlayer.playPlayer.bind(player);
+      // player.reversePlayer = maxifill.groupPlayer.reversePlayer.bind(player);
+      player.absorbMethods(maxifill.groupPlayer);
+      player.cancel();
+      player.source = source;
+      source.__player = player;
+      source._player = source._player || player;
+      player.childPlayers = [];
+      for (var i = 0; i < source.children.length; i++) {
+        source.children[i]._player = source._player;
+        var childPlayer = global.document.timeline.play(source.children[i]);
+        childPlayer._parent = player;
+        if (source instanceof global.AnimationSequence)
+          if (i > 0) {
+            childPlayer._startOffset += (player.childPlayers[i - 1]._startOffset + player.childPlayers[i - 1]._source.totalDuration);
+          }
+        childPlayer.startTime = 0;
+        if (player.startTime)
+          childPlayer.startTime += player.startTime;
+        player.childPlayers.push(childPlayer);
+      }
+      return player;
+    }
+    return play(source);
+  }
 
-}(shared, testing));
+}(shared, maxifill, testing));
 
