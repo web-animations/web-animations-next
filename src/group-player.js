@@ -18,7 +18,7 @@
   // FIXME: I realise that this is a confusing way to do this. Alternatively we can move _most_ of these into the global.Player.prototype
   // and have them check for this.hasOwnProperty('childPlayers') or move _all_ of them into the player proto and have them check for
   // this.source insanceof ...
-  // I don't know what's best. Personally I kind of like this method because it keeps the groups logic out of the player proto.
+  // I don't know what's best. Personally I kind of like this approach because it keeps the groups logic out of the player proto.
   maxifill.groupPlayer = {
     setCurrentTime: function(newTime) {
       if (!this.paused)
@@ -41,11 +41,10 @@
         total = Math.max(total, this.childPlayers[child].totalDuration);
       return total;
     },
-    isFinished: function() {
-      return this._playbackRate > 0 && this.__currentTime >= this.totalDuration ||
-             this._playbackRate < 0 && this.__currentTime <= 0;
-      return false;
-    },
+    // isFinished: function() {
+    //   return this._playbackRate > 0 && this.__currentTime >= this.totalDuration ||
+    //          this._playbackRate < 0 && this.__currentTime <= 0;
+    // },
     setStartTime: function(newTime) {
       if(!this.paused) {
         this._startTime = newTime + this.offset;
