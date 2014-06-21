@@ -21,7 +21,7 @@
 
   scope.Timeline.prototype = {
     _play: function(source) {
-      var player = new global.Player(source);
+      var player = new shared.Player(source);
       if ((TESTING || ticking) && this.currentTime !== undefined) {
         player._startTime = this.currentTime;
       }

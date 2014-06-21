@@ -58,8 +58,10 @@
     }
     // FIXME: Move this code out of this module
     if (source instanceof global.AnimationSequence || source instanceof global.AnimationGroup) {
+      var oldPlayerProto = shared.Player.prototype;
+      shared.Player.prototype = maxifill.groupPlayerProto;
       var player = global.document.timeline.play(new Animation(document.documentElement, []));
-      player.absorbMethods(maxifill.groupPlayer);
+      shared.Player.prototype = oldPlayerProto;
       player.cancel();
       player.source = source;
       source.__player = player;
@@ -71,9 +73,6 @@
         childPlayer._parent = player;
         if (source instanceof global.AnimationSequence && i > 0)
             childPlayer._startOffset += (player.childPlayers[i - 1]._startOffset + player.childPlayers[i - 1]._source.totalDuration);
-        childPlayer.startTime = 0;
-        if (player.startTime)
-          childPlayer.startTime += player.startTime;
         player.childPlayers.push(childPlayer);
       }
       return player;

@@ -30,7 +30,7 @@
 
   var sequenceNumber = 0;
 
-  global.Player = function(source) {
+  shared.Player = function(source) {
     this.__currentTime = 0;
     this._startTime = null;
     this._source = source;
@@ -43,63 +43,9 @@
     this._finishHandlers = [];
     this._startOffset = 0;
     this._parent = null;
-    // this._parentOffset = 0;
   };
 
-  global.Player.prototype = {
-    setPlaybackRate: function(newRate) {
-      var previousTime = this.currentTime;
-      this._playbackRate = newRate;
-      this.currentTime = previousTime;
-    },
-    setCurrentTime: function(newTime) {
-      if (!this.paused)
-        this.startTime += (this.currentTime - newTime) / this.playbackRate;
-      this._currentTime = newTime - this.offset;
-    },
-    getTotalDuration: function() {
-      return this._source.totalDuration;
-    },
-    // TODO: Rename these with underscores
-    isFinished: function() {
-      return this._playbackRate > 0 && this.__currentTime >= this.totalDuration ||
-       this._playbackRate < 0 && this.__currentTime <= 0;
-    },
-    setStartTime: function(newTime) {
-      if (!this.paused)
-        this._startTime = newTime + this.offset;
-    },
-    pausePlayer: function() {
-      this.paused = true;
-      this._startTime = null;
-    },
-    playPlayer: function() {
-      this.paused = false;
-      if (this.finished)
-        this.__currentTime = this._playbackRate > 0 ? 0 : this.totalDuration;
-      this._finishedFlag = false;
-      if (!shared.restart())
-        this.startTime = this._timeline.currentTime + this.__currentTime / this._playbackRate;
-    },
-    reversePlayer: function() {
-      this._playbackRate *= -1;
-      if (this._finishedFlag)
-        this._startTime = this._timeline.currentTime - this.offset - this._timeline.currentTime / this._playbackRate;
-      else
-        this._startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
-      shared.restart();
-      if (!this._inTimeline) {
-        this._inTimeline = true;
-        document.timeline.players.push(this);
-      }
-      this._finishedFlag = false;
-    },
-    // FIXME: If this function is only used once, move inline in caller.
-    absorbMethods: function(newMethods) {
-      for (var method in newMethods)
-        if (newMethods.hasOwnProperty(method))
-          this[method] = newMethods[method].bind(this);
-    },
+  shared.Player.prototype = {
     get currentTime() { return this.__currentTime; },
     set _currentTime(newTime) {
       if (newTime != this.__currentTime) {
@@ -114,19 +60,19 @@
       }
     },
     get playbackRate() { return this._playbackRate; },
-    // TODO: Implement for groups
     set playbackRate(newRate) {
-      // var previousTime = this.currentTime;
-      // this._playbackRate = newRate;
-      // this.currentTime = previousTime;
-      this.setPlaybackRate(newRate);
+      var previousTime = this.currentTime;
+      this._playbackRate = newRate;
+      this.currentTime = previousTime;
     },
-    // ODOT
     set currentTime(newTime) {
-      this.setCurrentTime(newTime);
+      if (!this.paused)
+        this.startTime += (this.currentTime - newTime) / this.playbackRate;
+      this._currentTime = newTime - this.offset;
     },
     get finished() {
-      return this.isFinished();
+      return this._playbackRate > 0 && this.__currentTime >= this.totalDuration ||
+        this._playbackRate < 0 && this.__currentTime <= 0;
     },
     get startTime() {
       if (!this.paused && this._startTime == null)
@@ -134,13 +80,15 @@
       return this._startTime;
     },
     set startTime(newTime) {
-      this.setStartTime(newTime);
+      if (!this.paused)
+        this._startTime = newTime + this.offset;
     },
-    get totalDuration() { return this.getTotalDuration(); },
+    get totalDuration() {  return this._source.totalDuration; },
     // FIXME: This walks the animation tree to calculate offsets.
     // It makes offsets resilient to tree surgery, except removing animations from a sequence.
     // Do we want to pre-compute this, and re-compute upon surgery? Do we want to go further
     // In this direction and calculate all offsets every time (i.e. calculate offsets within a sequence).
+    // TODO: Try to move this out of here.
     get offset() { 
       if (this._parent)
         return this._startOffset + this._parent._startOffset;
@@ -148,15 +96,30 @@
         return this._startOffset;
     },
     pause: function() {
-      this.pausePlayer();
+      this.paused = true;
+      this._startTime = null;
     },
     play: function() {
-      this.playPlayer();
+      this.paused = false;
+      if (this.finished)
+        this.__currentTime = this._playbackRate > 0 ? 0 : this.totalDuration;
+      this._finishedFlag = false;
+      if (!shared.restart())
+        this.startTime = this._timeline.currentTime + this.__currentTime / this._playbackRate;
     },
     reverse: function() {
-      this.reversePlayer();
+      this._playbackRate *= -1;
+      if (this._finishedFlag)
+        this._startTime = this._timeline.currentTime - this.offset - this._timeline.currentTime / this._playbackRate;
+      else
+        this._startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
+      shared.restart();
+      if (!this._inTimeline) {
+        this._inTimeline = true;
+        document.timeline.players.push(this);
+      }
+      this._finishedFlag = false;
     },
-    // TODO: Implement for groups
     finish: function() {
       this.currentTime = this._playbackRate > 0 ? this.totalDuration : 0;
     },
@@ -165,7 +128,6 @@
       this._source.totalDuration = 0;
       this.currentTime = 0;
     },
-    // OTOD
     addEventListener: function(type, handler) {
       if (typeof handler == 'function' && type == 'finish')
         this._finishHandlers.push(handler);

@@ -19,81 +19,83 @@
   // and have them check for this.hasOwnProperty('childPlayers') or move _all_ of them into the player proto and have them check for
   // this.source insanceof ...
   // I don't know what's best. Personally I kind of like this approach because it keeps the groups logic out of the player proto.
-  maxifill.groupPlayer = {
-    setCurrentTime: function(newTime) {
-      if (!this.paused)
-        this.startTime += (this.currentTime - newTime) / this.playbackRate;
-      else
-        if (this.hasOwnProperty('childPlayers'))
-          for (var i = 0; i < this.childPlayers.length; i++)
-            this.childPlayers[i].currentTime = newTime;
-      this._currentTime = newTime - this.offset;
-    },
-    getTotalDuration: function() {
-      if (this.source instanceof global.AnimationSequence) {
-        var total = 0;
-        for(var child in this.childPlayers)
-          total += this.childPlayers[child].totalDuration;
-        return total;
-      }
-      var total = 0;
-      for(var child in this.childPlayers)
-        total = Math.max(total, this.childPlayers[child].totalDuration);
-      return total;
-    },
-    // isFinished: function() {
-    //   return this._playbackRate > 0 && this.__currentTime >= this.totalDuration ||
-    //          this._playbackRate < 0 && this.__currentTime <= 0;
-    // },
-    setStartTime: function(newTime) {
-      if(!this.paused) {
-        this._startTime = newTime + this.offset;
-        if (this.hasOwnProperty('childPlayers'))
-          for (var i = 0; i < this.childPlayers.length; i++)
-            this.childPlayers[i].startTime = newTime;
-      }
-    },
-    pausePlayer: function() {
-      this.paused = true;
-      this._startTime = null;
-      if (this.hasOwnProperty('childPlayers'))
-        for (var i = 0; i < this.childPlayers.length; i++)
-          this.childPlayers[i].pause();
-    },
-    playPlayer: function() {
-      this.paused = false;
-      if (this.finished)
-        this.__currentTime = this._playbackRate > 0 ? 0 : this.totalDuration;
-      this._finishedFlag = false;
-      if (!shared.restart())
-        this.startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
-      if (this.hasOwnProperty('childPlayers'))
-        for (var i = 0; i < this.childPlayers.length; i++)
-          if (!this.childPlayers[i].finished)
-            this.childPlayers[i].play();
-    },
-    // TODO: Fix this. ATM it's just as-is from player proto
-    setPlaybackRate: function(newRate) {
-      var previousTime = this.currentTime;
-      this._playbackRate = newRate;
-      this.currentTime = previousTime;
-    },
-    reversePlayer: function() {
-      this._playbackRate *= -1;
-      if (this._finishedFlag)
-        this._startTime = this._timeline.currentTime - this.offset - this._timeline.currentTime / this._playbackRate;
-      else
-        this._startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
-      shared.restart();
-      if (!this._inTimeline) {
-        this._inTimeline = true;
-        document.timeline.players.push(this);
-      }
-      this._finishedFlag = false;
-      if (this.hasOwnProperty('childPlayers'))
-        for (var i = 0; i < this.childPlayers.length; i++)
-          this.childPlayers[i].reverse();
-    },
+
+  var createObject = function(proto, obj) {
+    var newObject = Object.create(proto);
+    Object.getOwnPropertyNames(obj).forEach(function(name) {
+      Object.defineProperty(
+          newObject, name, Object.getOwnPropertyDescriptor(obj, name));
+    });
+    return newObject;
   };
 
+  maxifill.groupPlayerProto = createObject(shared.Player.prototype,
+    {
+      set currentTime(newTime) {
+        if (!this.paused)
+          this.startTime += (this.currentTime - newTime) / this.playbackRate;
+        else
+          if (this.hasOwnProperty('childPlayers'))
+            for (var i = 0; i < this.childPlayers.length; i++)
+              this.childPlayers[i].currentTime = newTime;
+        this._currentTime = newTime - this.offset;
+      },
+      get totalDuration() {
+        if (this.source instanceof global.AnimationSequence) {
+          var total = 0;
+          for(var child in this.childPlayers)
+            total += this.childPlayers[child].totalDuration;
+          return total;
+        }
+        var total = 0;
+        for(var child in this.childPlayers)
+          total = Math.max(total, this.childPlayers[child].totalDuration);
+        return total;
+      },
+      set startTime(newTime) {
+        if(!this.paused) {
+          this._startTime = newTime + this.offset;
+          if (this.hasOwnProperty('childPlayers'))
+            for (var i = 0; i < this.childPlayers.length; i++)
+              this.childPlayers[i].startTime = newTime;
+        }
+      },
+      pause: function() {
+        this.paused = true;
+        this._startTime = null;
+        if (this.hasOwnProperty('childPlayers'))
+          for (var i = 0; i < this.childPlayers.length; i++)
+            this.childPlayers[i].pause();
+      },
+      play: function() {
+        this.paused = false;
+        if (this.finished)
+          this.__currentTime = this._playbackRate > 0 ? 0 : this.totalDuration;
+        this._finishedFlag = false;
+        if (!shared.restart())
+          this.startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
+        if (this.hasOwnProperty('childPlayers'))
+          for (var i = 0; i < this.childPlayers.length; i++)
+            if (!this.childPlayers[i].finished)
+              this.childPlayers[i].play();
+      },
+      reverse: function() {
+        this._playbackRate *= -1;
+        if (this._finishedFlag)
+          this._startTime = this._timeline.currentTime - this.offset - this._timeline.currentTime / this._playbackRate;
+        else
+          this._startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
+        shared.restart();
+        if (!this._inTimeline) {
+          this._inTimeline = true;
+          document.timeline.players.push(this);
+        }
+        this._finishedFlag = false;
+        if (this.hasOwnProperty('childPlayers'))
+          for (var i = 0; i < this.childPlayers.length; i++)
+            this.childPlayers[i].reverse();
+      },
+    }
+  );
+  console.log(maxifill.groupPlayerProto);
 })(shared, maxifill, testing);

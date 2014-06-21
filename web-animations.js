@@ -35,7 +35,6 @@ if (this.TESTING === undefined) {
     'src/timeline.js',
     // --- maxifill below here --- //
     'src/animation-constructor.js',
-    'src/groups.js',
     'src/group-constructors.js',
     'src/group-player.js',
   ];
