@@ -80,8 +80,10 @@
       return this._startTime;
     },
     set startTime(newTime) {
-      if (!this.paused)
-        this._startTime = newTime + this.offset;
+      if (this.paused)
+        return;
+      this._startTime = newTime + this.offset;
+      this._currentTime = this._timeline.currentTime - this._startTime;
     },
     get totalDuration() {  return this._source.totalDuration; },
     // FIXME: This walks the animation tree to calculate offsets.
@@ -105,7 +107,7 @@
         this.__currentTime = this._playbackRate > 0 ? 0 : this.totalDuration;
       this._finishedFlag = false;
       if (!shared.restart())
-        this.startTime = this._timeline.currentTime + this.__currentTime / this._playbackRate;
+        this.startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
     },
     reverse: function() {
       this._playbackRate *= -1;
