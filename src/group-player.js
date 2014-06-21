@@ -40,6 +40,9 @@
               this.childPlayers[i].currentTime = newTime;
         this._currentTime = newTime - this.offset;
       },
+      get currentTime() {
+        return this.__currentTime;
+      },
       get totalDuration() {
         if (this.source instanceof global.AnimationSequence) {
           var total = 0;
@@ -60,6 +63,9 @@
               this.childPlayers[i].startTime = newTime;
         }
       },
+      get startTime() {
+        return this._startTime;
+      },
       pause: function() {
         this.paused = true;
         this._startTime = null;
@@ -73,7 +79,7 @@
           this.__currentTime = this._playbackRate > 0 ? 0 : this.totalDuration;
         this._finishedFlag = false;
         if (!shared.restart())
-          this.startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
+          this._startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
         if (this.hasOwnProperty('childPlayers'))
           for (var i = 0; i < this.childPlayers.length; i++)
             if (!this.childPlayers[i].finished)
@@ -81,6 +87,7 @@
       },
       reverse: function() {
         this._playbackRate *= -1;
+        this.setChildOffsets();
         if (this._finishedFlag)
           this._startTime = this._timeline.currentTime - this.offset - this._timeline.currentTime / this._playbackRate;
         else
@@ -94,6 +101,24 @@
         if (this.hasOwnProperty('childPlayers'))
           for (var i = 0; i < this.childPlayers.length; i++)
             this.childPlayers[i].reverse();
+      },
+      setChildOffsets: function() {
+        if (this.playbackRate >= 0) {
+          if (this.source instanceof global.AnimationSequence) {
+            this.childPlayers[0]._startOffset = 0;
+            for (var i = 1; i < this.childPlayers.length; i++)
+              this.childPlayers[i]._startOffset = (this.childPlayers[i - 1]._startOffset + this.childPlayers[i - 1].totalDuration);
+          }
+        } else {
+          if (this.source instanceof global.AnimationSequence) {
+            this.childPlayers[this.childPlayers.length - 1]._startOffset = this.totalDuration;
+            for (var i = this.childPlayers.length - 2; i >= 0 ; i--)
+              this.childPlayers[i]._startOffset = this.totalDuration - (this.childPlayers[i + 1]._startOffset + this.childPlayers[i + 1].totalDuration);
+          } else {
+            for (var i = this.childPlayers.length - 1; i >= 0 ; i--)
+              this.childPlayers[i]._startOffset = this.totalDuration - this.childPlayers[i].totalDuration;
+          }
+        }
       },
     }
   );

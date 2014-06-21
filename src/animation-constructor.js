@@ -71,10 +71,9 @@
         source.children[i]._player = source._player;
         var childPlayer = global.document.timeline.play(source.children[i]);
         childPlayer._parent = player;
-        if (source instanceof global.AnimationSequence && i > 0)
-            childPlayer._startOffset += (player.childPlayers[i - 1]._startOffset + player.childPlayers[i - 1]._source.totalDuration);
         player.childPlayers.push(childPlayer);
       }
+      player.setChildOffsets();
       return player;
     }
     return play(source);

@@ -107,14 +107,11 @@
         this.__currentTime = this._playbackRate > 0 ? 0 : this.totalDuration;
       this._finishedFlag = false;
       if (!shared.restart())
-        this.startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
+        this._startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
     },
     reverse: function() {
       this._playbackRate *= -1;
-      if (this._finishedFlag)
-        this._startTime = this._timeline.currentTime - this.offset - this._timeline.currentTime / this._playbackRate;
-      else
-        this._startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
+      this._startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
       shared.restart();
       if (!this._inTimeline) {
         this._inTimeline = true;
