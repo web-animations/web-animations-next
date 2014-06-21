@@ -12,7 +12,7 @@
 //     See the License for the specific language governing permissions and
 // limitations under the License.
 
-(function(scope, testing) {
+(function(shared, scope, testing) {
 
   // These methods get transplanted into players if their souce is a group using the absorbMethods method on the global.Player.prototype.
   // FIXME: I realise that this is a confusing way to do this. Alternatively we can move _most_ of these into the global.Player.prototype
@@ -65,12 +65,12 @@
       if (this.finished)
         this.__currentTime = this._playbackRate > 0 ? 0 : this.totalDuration;
       this._finishedFlag = false;
-      shared.restart();
+      if (!shared.restart())
+        this.startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
       if (this.hasOwnProperty('childPlayers'))
         for (var i = 0; i < this.childPlayers.length; i++)
           if (!this.childPlayers[i].finished)
             this.childPlayers[i].play();
-      this.startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
     },
     // TODO: Fix this. ATM it's just as-is from player proto
     setPlaybackRate: function(newRate) {
@@ -96,4 +96,4 @@
     },
   };
 
-})(maxifill, testing);
+})(shared, maxifill, testing);

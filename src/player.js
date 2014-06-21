@@ -77,17 +77,9 @@
       this.paused = false;
       if (this.finished)
         this.__currentTime = this._playbackRate > 0 ? 0 : this.totalDuration;
-      this.startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
       this._finishedFlag = false;
-      shared.restart();
-
-      // FIXME: FROM HEAD PROBABLY WANT TO TO USE THIS
-      // this.paused = false;
-      // if (this.finished)
-      //   this.__currentTime = this._playbackRate > 0 ? 0 : this._source.totalDuration;
-      // this._finishedFlag = false;
-      // if (!scope.restart())
-      //   this._startTime = this._timeline.currentTime - this.__currentTime / this._playbackRate;
+      if (!shared.restart())
+        this.startTime = this._timeline.currentTime + this.__currentTime / this._playbackRate;
     },
     reversePlayer: function() {
       this._playbackRate *= -1;

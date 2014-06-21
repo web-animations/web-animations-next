@@ -35,6 +35,7 @@
         //     if (property != 'offset')
         //       scope.clear(target, property);
         // }
+      }
     };
   };
 

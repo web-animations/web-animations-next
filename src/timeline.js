@@ -34,7 +34,7 @@
 
   var ticking = true;
 
-  scope.restart = function() {
+  shared.restart = function() {
     if (TESTING)
       return;
     if (!ticking) {
