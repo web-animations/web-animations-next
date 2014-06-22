@@ -122,7 +122,7 @@ suite('group-player', function() {
       return;
     }
     if (timingList[0] == null || typeof timingList[0] == 'number') {
-      assert.equal(player._startTime, timingList[0], trace + ' startTime');
+      assert.equal(player.startTime, timingList[0], trace + ' startTime');
       assert.equal(player.currentTime, timingList[1], trace + ' currentTime');
       if (timingList.length == 3)
         assert.equal(player._startOffset, timingList[2], trace + ' startOffset');

@@ -35,13 +35,16 @@
 
   var ticking = true;
 
+  var restartedThisFrame = false;
+
   scope.restart = function() {
     if (!ticking) {
       ticking = true;
       if (!TESTING)
         requestAnimationFrame(tick);
-      return true;
+      restartedThisFrame = true;
     }
+    return restartedThisFrame;
   };
 
   var getComputedStylePatched = false;
@@ -79,6 +82,7 @@
   };
 
   function tick(t) {
+    restartedThisFrame = false;
     var timeline = global.document.timeline;
     timeline.currentTime = t;
     timeline.players.sort(function(leftPlayer, rightPlayer) {
@@ -89,7 +93,7 @@
     timeline.players = timeline.players.filter(function(player) {
       if (!(player.paused || player.finished)) {
         if (player._startTime === null)
-          player.startTime = t - player.__currentTime / player.playbackRate;
+          player._startTime = t - player.__currentTime / player.playbackRate;
         player._currentTime = (t - player._startTime) * player.playbackRate;
         if (!player.finished)
           ticking = true;
