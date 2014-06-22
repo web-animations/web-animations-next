@@ -30,12 +30,9 @@
     set currentTime(newTime) {
       for (var i = 0; i < this.childPlayers.length; i++)
         this.childPlayers[i].currentTime = newTime;
-      this.setCurrentTime(newTime, document.timeline.currentTime);
     },
     get currentTime() {
-      if (this._startTime !== null)
-        return global.document.timeline.currentTime - this._startTime;
-      return this.__currentTime;
+      return (document.timeline.currentTime - this.startTime) / this.playbackRate;
     },
     get totalDuration() {
       var total = 0;
@@ -49,17 +46,28 @@
       return total;
     },
     set startTime(newTime) {
-      this.setStartTime(newTime, document.timeline.currentTime);
       for (var i = 0; i < this.childPlayers.length; i++)
         this.childPlayers[i].startTime = newTime;
     },
-    get startTime() {
-      if (this._startTime == null && this.childPlayers.length > 0) {
-        this._startTime = this.childPlayers[0]._startTime;
+    set _startTime(newTime) {
+      for (var i = 0; i < this.childPlayers.length; i++)
+        this.childPlayers[i]._startTime = newTime + this.childPlayers[i]._startOffset / this.playbackRate;
+    },
+    activeChild: function() {
+      for (var i = 0; i < this.childPlayers.length; i++) {
+        if (!this.childPlayers[i].finished) {
+          return this.childPlayers[i];
+        }
       }
-      return this._startTime;
+      return this.childPlayers[0];
+    },
+    get startTime() {
+      var active = this.activeChild();
+      return active.startTime - active._startOffset;
     },
     pause: function() {
+      // make sure currentTime is up-to-date first
+      this.currentTime;
       superclass.pause.call(this);
       for (var i = 0; i < this.childPlayers.length; i++)
         this.childPlayers[i].pause();
@@ -72,6 +80,10 @@
       for (var i = 0; i < this.childPlayers.length; i++) {
         if (!this.childPlayers[i].finished)
           this.childPlayers[i].play();
+        else {
+          this.childPlayers[i].play();
+          this.childPlayers[i].finish();
+        }
       }
       if (this.childPlayers.length > 0)
         this._startTime = this.childPlayers[0].startTime;
@@ -79,15 +91,15 @@
         this._startTime = null;
     },
     reverse: function() {
+      var oldStart = this.startTime;
+      var oldCurrent = this.currentTime;
       this._playbackRate *= -1;
-      this.setChildOffsets();
       this._finishedFlag = false;
       for (var i = 0; i < this.childPlayers.length; i++)
         this.childPlayers[i].reverse();
-      if (this.childPlayers.length > 0)
-        this._startTime = this.childPlayers[0].startTime;
-      else
-        this._startTime = null;
+      //this.setChildOffsets();
+      //this.currentTime = oldCurrent;
+      this._startTime = oldCurrent * 2 - oldStart;
     },
     setChildOffsets: function() {
       if (this.playbackRate >= 0) {
@@ -100,9 +112,9 @@
       } else {
         if (this.source instanceof global.AnimationSequence) {
           if (this.childPlayers.length > 0)
-            this.childPlayers[this.childPlayers.length - 1]._startOffset = this.totalDuration;
+            this.childPlayers[this.childPlayers.length - 1]._startOffset = 0;
           for (var i = this.childPlayers.length - 2; i >= 0; i--)
-            this.childPlayers[i]._startOffset = this.totalDuration - (this.childPlayers[i + 1]._startOffset + this.childPlayers[i + 1].totalDuration);
+            this.childPlayers[i]._startOffset = this.childPlayers[i + 1]._startOffset + this.childPlayers[i + 1].totalDuration;
         } else {
           for (var i = this.childPlayers.length - 1; i >= 0; i--)
             this.childPlayers[i]._startOffset = this.totalDuration - this.childPlayers[i].totalDuration;

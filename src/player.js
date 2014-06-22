@@ -21,6 +21,7 @@
     this._startOffset = 0;
     this.init();
     this._source = source;
+    this._startTime = null;
   };
 
   scope.Player.prototype = {
@@ -42,8 +43,11 @@
       return this._startTime;
     },
     set startTime(newTime) {
-      if (this.setStartTime(newTime, this._timeline.currentTime))
-        scope.invalidateEffects();
+      if (this.paused)
+        return;
+      this._startTime = newTime + this.offset;
+      this._currentTime = this._timeline.currentTime - this._startTime;
+      scope.invalidateEffects();
     },
     get totalDuration() { return this._source.totalDuration; },
     play: function() {

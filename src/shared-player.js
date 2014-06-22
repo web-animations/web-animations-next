@@ -31,7 +31,6 @@
   shared.PlayerProto = {
     init: function() {
       this.__currentTime = 0;
-      this._startTime = null;
       this.paused = false;
       this._playbackRate = 1;
       this._inTimeline = true;
@@ -62,13 +61,6 @@
       return this._playbackRate > 0 && this.__currentTime >= this.totalDuration ||
           this._playbackRate < 0 && this.__currentTime <= 0;
     },
-    setStartTime: function(newTime, baseTime) {
-      if (this.paused)
-        return;
-      this._startTime = newTime + this.offset;
-      this._currentTime = baseTime - this._startTime;
-      return true;
-    },
     // FIXME: This walks the animation tree to calculate offsets.
     // It makes offsets resilient to tree surgery, except removing animations from a sequence.
     // Do we want to pre-compute this, and re-compute upon surgery? Do we want to go further
@@ -76,9 +68,9 @@
     // TODO: Try to move this out of here.
     get offset() {
       if (this._parent)
-        return this._startOffset + this._parent._startOffset;
+        return (this._startOffset + this._parent._startOffset) / this._playbackRate;
       else
-        return this._startOffset;
+        return this._startOffset / this._playbackRate;
     },
     pause: function() {
       this.paused = true;
