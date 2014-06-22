@@ -12,6 +12,10 @@ suite('group-player', function() {
           ],
           500);
     };
+
+    // FIXME: Remove. Used for testing pause on simple Animations during dev of this test.
+    this.animationMargin = animationMargin;
+
     var animationColor = function(target) {
       return new Animation(
           target,
@@ -21,7 +25,6 @@ suite('group-player', function() {
           ],
           500);
     };
-    this.animationMargin = animationMargin; // FIXME: Remove.
     var sequenceEmpty = function() {
       return new AnimationSequence();
     };
@@ -162,7 +165,7 @@ suite('group-player', function() {
       return;
     }
     if (timingList[0] == null || typeof timingList[0] == 'number') {
-      assert.equal(player.startTime, timingList[0], trace + ' startTime');
+      assert.equal(player._startTime, timingList[0], trace + ' startTime');
       assert.equal(player.currentTime, timingList[1], trace + ' currentTime');
       if (timingList.length == 3)
         assert.equal(player._startOffset, timingList[2], trace + ' startOffset');
@@ -364,125 +367,303 @@ suite('group-player', function() {
       players[i].play();
   });
 
-  // Test Player.pause() for the empty AnimationSequence, the empty AnimationGroup,
-  // the simple AnimationSequence, and the simple AnimationGroup.
-  // WHAT ARE THE PROPERTIES OF A PAUSED GROUP?
   test('pausing works as expected with an empty AnimationSequence', function() {
     tick(0);
     var player = document.timeline.play(this.seqEmpty_source);
-    assert.equal(player.startTime, null); // FIXME: Is this correct?
-    assert.equal(player.currentTime, 0);
+    // check: player
+    // assert.equal(player.startTime, X);
+    // assert.equal(player.currentTime, X);
     player.pause();
-    assert.equal(player.startTime, null);
-    assert.equal(player.currentTime, 0);
+    // check
+  });
+
+  test('pausing works as expected with a simple AnimationSequence', function() {
+    tick(0);
+    var player = document.timeline.play(this.seqSimple_source);
+    // check: player,
+    //        player.childPlayers[0],
+    //        player.childPlayers[1]
+    // assert.equal(player.startTime, X);
+    // assert.equal(player.currentTime, X);
+    // assert.equal(player.childPlayers[0].startTime, X);
+    // assert.equal(player.childPlayers[0].currentTime, X);
+    // assert.equal(player.childPlayers[1].startTime, X);
+    // assert.equal(player.childPlayers[1].currentTime, X);
+    tick(200);
+    // check
+    player.pause();
+    // check
+    tick(300);
+    // check
+    player.play();
+    tick(300);
+    // check
+    tick(700);
+    // check
+  });
+
+  test('pausing works as expected with an AnimationSequence inside an AnimationSequence', function() {
+    tick(0);
+    var player = document.timeline.play(this.seqWithSeq_source);
+    // check: player,
+    //        player.childPlayers[0],
+    //        player.childPlayers[1],
+    //        player.childPlayers[2],
+    //        player.childPlayers[2].childPlayers[0],
+    //        player.childPlayers[2].childPlayers[1]
+    // assert.equal(player.startTime, X);
+    // assert.equal(player.currentTime, X);
+    // assert.equal(player.childPlayers[0].startTime, X);
+    // assert.equal(player.childPlayers[0].currentTime, X);
+    // assert.equal(player.childPlayers[1].startTime, X);
+    // assert.equal(player.childPlayers[1].currentTime, X);
+    // assert.equal(player.childPlayers[2].startTime, X);
+    // assert.equal(player.childPlayers[2].currentTime, X);
+    // assert.equal(player.childPlayers[2].childPlayers[0].startTime, X);
+    // assert.equal(player.childPlayers[2].childPlayers[0].currentTime, X);
+    // assert.equal(player.childPlayers[2].childPlayers[1].startTime, X);
+    // assert.equal(player.childPlayers[2].childPlayers[1].currentTime, X);
+    tick(200);
+    // check
+    player.pause();
+    // check
+    tick(300);
+    // check
+    player.play();
+    tick(300);
+    // check
+    tick(1300);
+    // check
+    player.pause();
+    // check
+    tick(1400);
+    // check
+    player.play();
+    tick(1400);
+    // check
+    tick(1600);
+    // check
+    player.pause();
+    // check
+    tick(1700);
+    // check
+    player.play();
+    tick(1700);
+    // check
+  });
+
+  test('pausing works as expected with an AnimationGroup inside an AnimationSequence', function() {
+    tick(0);
+    var player = document.timeline.play(this.seqWithGroup_source);
+    // check: player,
+    //        player.childPlayers[0],
+    //        player.childPlayers[1],
+    //        player.childPlayers[2],
+    //        player.childPlayers[2].childPlayers[0],
+    //        player.childPlayers[2].childPlayers[1]
+    // assert.equal(player.startTime, X);
+    // assert.equal(player.currentTime, X);
+    // assert.equal(player.childPlayers[0].startTime, X);
+    // assert.equal(player.childPlayers[0].currentTime, X);
+    // assert.equal(player.childPlayers[1].startTime, X);
+    // assert.equal(player.childPlayers[1].currentTime, X);
+    // assert.equal(player.childPlayers[2].startTime, X);
+    // assert.equal(player.childPlayers[2].currentTime, X);
+    // assert.equal(player.childPlayers[2].childPlayers[0].startTime, X);
+    // assert.equal(player.childPlayers[2].childPlayers[0].currentTime, X);
+    // assert.equal(player.childPlayers[2].childPlayers[1].startTime, X);
+    // assert.equal(player.childPlayers[2].childPlayers[1].currentTime, X);
+    tick(200);
+    // check
+    player.pause();
+    // check
+    tick(300);
+    // check
+    player.play();
+    tick(300);
+    // check
+    tick(1300);
+    // check
+    player.pause();
+    // check
+    tick(1400);
+    // check
+    player.play();
+    tick(1400);
+    // check
+  });
+
+  test('pausing works as expected with an empty AnimationSequence inside an AnimationSequence', function() {
+    tick(0);
+    var player = document.timeline.play(this.seqWithEmptySeq_source);
+    // check: player,
+    //        player.childPlayers[0]
+    // assert.equal(player.startTime, X);
+    // assert.equal(player.currentTime, X);
+    // assert.equal(player.childPlayers[0].startTime, X);
+    // assert.equal(player.childPlayers[0].currentTime, X);
+    player.pause();
+    // check
+  });
+
+  test('pausing works as expected with an empty AnimationGroup inside an AnimationSequence', function() {
+    tick(0);
+    var player = document.timeline.play(this.seqWithEmptyGroup_source);
+    // check: player,
+    //        player.childPlayers[0]
+    // assert.equal(player.startTime, X);
+    // assert.equal(player.currentTime, X);
+    // assert.equal(player.childPlayers[0].startTime, X);
+    // assert.equal(player.childPlayers[0].currentTime, X);
+    player.pause();
+    // check
   });
 
   test('pausing works as expected with an empty AnimationGroup', function() {
     tick(0);
     var player = document.timeline.play(this.groupEmpty_source);
-    assert.equal(player.startTime, null); // FIXME: Is this correct?
-    assert.equal(player.currentTime, 0);
+    // check: player
+    // assert.equal(player.startTime, X);
+    // assert.equal(player.currentTime, X);
     player.pause();
-    assert.equal(player.startTime, null);
-    assert.equal(player.currentTime, 0);
+    // check
   });
-
-  test('pausing works as expected with a simple AnimationSequence', function() {
-    tick(0);
-    console.log(this.seqSimple_source);
-    var player = document.timeline.play(this.seqSimple_source);
-    assert.equal(player.startTime, 0);
-    assert.equal(player.currentTime, 0);
-    assert.equal(player.childPlayers[0].startTime, 0);
-    assert.equal(player.childPlayers[0].currentTime, 0);
-    assert.equal(player.childPlayers[1].startTime, 500);
-    assert.equal(player.childPlayers[1].currentTime, -500);
-    tick(200);
-    assert.equal(player.startTime, 0);
-    assert.equal(player.currentTime, 200);
-    assert.equal(player.childPlayers[0].startTime, 0);
-    assert.equal(player.childPlayers[0].currentTime, 200);
-    assert.equal(player.childPlayers[1].startTime, 500);
-    assert.equal(player.childPlayers[1].currentTime, -300);
-    player.pause();
-    // assert.equal(player.startTime, null);
-    assert.equal(player.currentTime, 200); // FIXME: This result seems wrong.
-    assert.equal(player.childPlayers[0].startTime, null);
-    assert.equal(player.childPlayers[0].currentTime, 200);
-    assert.equal(player.childPlayers[1].startTime, null);
-    assert.equal(player.childPlayers[1].currentTime, -300);
-    tick(300);
-    // assert.equal(player.startTime, null);
-    assert.equal(player.currentTime, 300); // FIXME: This result seems wrong.
-    // assert.equal(player.childPlayers[0].startTime, null);
-    assert.equal(player.childPlayers[0].currentTime, 200);
-    assert.equal(player.childPlayers[1].startTime, null);
-    assert.equal(player.childPlayers[1].currentTime, -300);
-    player.play();
-    tick(300); // FIXME: Redundant tick?
-    // FIXME: None of these work at this stage.
-    // assert.equal(player.startTime, 100);
-    // assert.equal(player.currentTime, 200);
-    // assert.equal(player.childPlayers[0].startTime, 100);
-    // assert.equal(player.childPlayers[0].currentTime, 200);
-    // assert.equal(player.childPlayers[1].startTime, 600);
-    // assert.equal(player.childPlayers[1].currentTime, -300);
-    tick(700);
-    // FIXME: None of these work at this stage.
-    // assert.equal(player.startTime, 100);
-    // assert.equal(player.currentTime, 600);
-    // assert.equal(player.childPlayers[0].startTime, 100);
-    // assert.equal(player.childPlayers[0].currentTime, 500);
-    // assert.equal(player.childPlayers[1].startTime, 600);
-    // assert.equal(player.childPlayers[1].currentTime, 100);
-  });
-
 
   test('pausing works as expected with a simple AnimationGroup', function() {
     tick(0);
     console.log(this.groupSimple_source);
     var player = document.timeline.play(this.groupSimple_source);
-    assert.equal(player.startTime, 0);
-    assert.equal(player.currentTime, 0);
-    assert.equal(player.childPlayers[0].startTime, 0);
-    assert.equal(player.childPlayers[0].currentTime, 0);
-    assert.equal(player.childPlayers[1].startTime, 0);
-    assert.equal(player.childPlayers[1].currentTime, 0);
+    // check: player,
+    //        player.childPlayers[0],
+    //        player.childPlayers[1]
+    // assert.equal(player.startTime, X);
+    // assert.equal(player.currentTime, X);
+    // assert.equal(player.childPlayers[0].startTime, X);
+    // assert.equal(player.childPlayers[0].currentTime, X);
+    // assert.equal(player.childPlayers[1].startTime, X);
+    // assert.equal(player.childPlayers[1].currentTime, X);
     tick(200);
-    assert.equal(player.startTime, 0);
-    assert.equal(player.currentTime, 200);
-    assert.equal(player.childPlayers[0].startTime, 0);
-    assert.equal(player.childPlayers[0].currentTime, 200);
-    assert.equal(player.childPlayers[1].startTime, 0);
-    assert.equal(player.childPlayers[1].currentTime, 200);
+    // check
     player.pause();
-    assert.equal(player.startTime, null);
-    assert.equal(player.currentTime, 0); // FIXME: This result seems wrong.
-    assert.equal(player.childPlayers[0].startTime, null);
-    assert.equal(player.childPlayers[0].currentTime, 200);
-    assert.equal(player.childPlayers[1].startTime, null);
-    assert.equal(player.childPlayers[1].currentTime, 200);
+    // check
     tick(300);
-    assert.equal(player.startTime, null);
-    assert.equal(player.currentTime, 0); // FIXME: This result seems wrong.
-    assert.equal(player.childPlayers[0].startTime, null);
-    assert.equal(player.childPlayers[0].currentTime, 200);
-    assert.equal(player.childPlayers[1].startTime, null);
-    assert.equal(player.childPlayers[1].currentTime, 200);
+    // check
     player.play();
     tick(300);
-    // FIXME: None of these work at this stage.
-    // assert.equal(player.startTime, 100);
-    // assert.equal(player.currentTime, 200);
-    // assert.equal(player.childPlayers[0].startTime, 100);
-    // assert.equal(player.childPlayers[0].currentTime, 200);
-    // assert.equal(player.childPlayers[1].startTime, 100);
-    // assert.equal(player.childPlayers[1].currentTime, 200);
+    // check
   });
 
+  test('pausing works as expected with an AnimationSequence inside an AnimationGroup', function() {
+    tick(0);
+    var player = document.timeline.play(this.groupWithSeq_source);
+    // check: player,
+    //        player.childPlayers[0],
+    //        player.childPlayers[1],
+    //        player.childPlayers[2],
+    //        player.childPlayers[2].childPlayers[0],
+    //        player.childPlayers[2].childPlayers[1]
+    // assert.equal(player.startTime, X);
+    // assert.equal(player.currentTime, X);
+    // assert.equal(player.childPlayers[0].startTime, X);
+    // assert.equal(player.childPlayers[0].currentTime, X);
+    // assert.equal(player.childPlayers[1].startTime, X);
+    // assert.equal(player.childPlayers[1].currentTime, X);
+    // assert.equal(player.childPlayers[2].startTime, X);
+    // assert.equal(player.childPlayers[2].currentTime, X);
+    // assert.equal(player.childPlayers[2].childPlayers[0].startTime, X);
+    // assert.equal(player.childPlayers[2].childPlayers[0].currentTime, X);
+    // assert.equal(player.childPlayers[2].childPlayers[1].startTime, X);
+    // assert.equal(player.childPlayers[2].childPlayers[1].currentTime, X);
+    tick(200);
+    // check
+    player.pause();
+    // check
+    tick(300);
+    // check
+    player.play();
+    tick(300);
+    // check
+    tick(800);
+    // check
+    player.pause();
+    // check
+    tick(900);
+    // check
+    player.play();
+    tick(900);
+    // check
+    tick(1300);
+    // check
+    player.pause();
+    // check
+    tick(1300);
+    // check
+    player.play();
+    tick(1400);
+    // check
+  });
+
+  test('pausing works as expected with an AnimationGroup inside an AnimationGroup', function() {
+    tick(0);
+    var player = document.timeline.play(this.groupWithGroup_source);
+    // check: player,
+    //        player.childPlayers[0],
+    //        player.childPlayers[1],
+    //        player.childPlayers[2],
+    //        player.childPlayers[2].childPlayers[0],
+    //        player.childPlayers[2].childPlayers[1]
+    // assert.equal(player.startTime, X);
+    // assert.equal(player.currentTime, X);
+    // assert.equal(player.childPlayers[0].startTime, X);
+    // assert.equal(player.childPlayers[0].currentTime, X);
+    // assert.equal(player.childPlayers[1].startTime, X);
+    // assert.equal(player.childPlayers[1].currentTime, X);
+    // assert.equal(player.childPlayers[2].startTime, X);
+    // assert.equal(player.childPlayers[2].currentTime, X);
+    // assert.equal(player.childPlayers[2].childPlayers[0].startTime, X);
+    // assert.equal(player.childPlayers[2].childPlayers[0].currentTime, X);
+    // assert.equal(player.childPlayers[2].childPlayers[1].startTime, X);
+    // assert.equal(player.childPlayers[2].childPlayers[1].currentTime, X);
+    tick(200);
+    // check
+    player.pause();
+    // check
+    tick(300);
+    // check
+    player.play();
+    tick(300);
+    // check
+  });
+
+  test('pausing works as expected with an empty AnimationSequence inside an AnimationGroup', function() {
+    tick(0);
+    var player = document.timeline.play(this.groupWithEmptySeq_source);
+    // check: player,
+    //        player.childPlayers[0]
+    // assert.equal(player.startTime, X);
+    // assert.equal(player.currentTime, X);
+    // assert.equal(player.childPlayers[0].startTime, X);
+    // assert.equal(player.childPlayers[0].currentTime, X);
+    player.pause();
+    // check
+  });
+
+  test('pausing works as expected with an empty AnimationGroup inside an AnimationGroup', function() {
+    tick(0);
+    var player = document.timeline.play(this.groupWithEmptyGroup_source);
+    // check: player,
+    //        player.childPlayers[0]
+    // assert.equal(player.startTime, X);
+    // assert.equal(player.currentTime, X);
+    // assert.equal(player.childPlayers[0].startTime, X);
+    // assert.equal(player.childPlayers[0].currentTime, X);
+    player.pause();
+    // check
+  });
+
+  // FIXME: This is just here as a baseline during development. REMOVE.
   test('pausing works as expected with a simple Animation', function() {
     tick(0);
-    // console.log(this.sequenceSource_2);
     var target = document.createElement('div');
     var player = document.timeline.play(this.animationMargin(target));
     assert.equal(player.startTime, 0);
@@ -497,7 +678,7 @@ suite('group-player', function() {
     assert.equal(player.startTime, null);
     assert.equal(player.currentTime, 200);
     player.play();
-    tick(300); // FIXME: Redundant tick?
+    tick(300);
     assert.equal(player.startTime, 100);
     assert.equal(player.currentTime, 200);
     tick(600);
