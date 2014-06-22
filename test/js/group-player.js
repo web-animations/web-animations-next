@@ -21,7 +21,7 @@ suite('group-player', function() {
           ],
           500);
     };
-
+    this.animationMargin = animationMargin; // FIXME: Remove.
     var sequenceEmpty = function() {
       return new AnimationSequence();
     };
@@ -162,7 +162,7 @@ suite('group-player', function() {
       return;
     }
     if (timingList[0] == null || typeof timingList[0] == 'number') {
-      assert.equal(player._startTime, timingList[0], trace + ' startTime');
+      assert.equal(player.startTime, timingList[0], trace + ' startTime');
       assert.equal(player.currentTime, timingList[1], trace + ' currentTime');
       if (timingList.length == 3)
         assert.equal(player._startOffset, timingList[2], trace + ' startOffset');
@@ -254,6 +254,54 @@ suite('group-player', function() {
     assert.equal(getComputedStyle(this.complexTarget).marginLeft, '0px');
   });
 
+  test('redundant animation node wrapping', function() {
+    var target = document.createElement('div');
+    document.documentElement.appendChild(target);
+    function createAnimation(value, duration) {
+      return new Animation(target, [{marginLeft: value}, {marginLeft: value}], duration);
+    }
+    tick(100);
+    var animation = new AnimationSequence([
+      createAnimation('0px', 1),
+      new AnimationGroup([
+        new AnimationSequence([
+          createAnimation('1px', 1),
+          createAnimation('2px', 1),
+        ]),
+      ]),
+    ]);
+    var player = document.timeline.play(animation);
+    assert.equal(getComputedStyle(target).marginLeft, '0px');
+    checkTimes(player, [100, 0], [
+      [100, 0, 0, 0], [[ // 0
+        [101, -1, 0, 1], // 1
+        [102, -2, 1, 2]]] // 2
+    ], 't = 100');
+    tick(101);
+    assert.equal(getComputedStyle(target).marginLeft, '1px');
+    checkTimes(player, [100, 1], [
+      [100, 1, 0, 0], [[ // 0
+        [101, 0, 0, 1], // 1
+        [102, -1, 1, 2]]] // 2
+    ], 't = 101');
+    tick(102);
+    assert.equal(getComputedStyle(target).marginLeft, '2px');
+    assert.equal(document.timeline.currentTime, 102);
+    checkTimes(player, [100, 2], [ // FIXME: Implement limiting on group players
+      [100, 1, 0, 0], [[ // 0
+        [101, 1, 0, 1], // 1
+        [102, 0, 1, 2]]] // 2
+    ], 't = 102');
+    tick(103);
+    assert.equal(getComputedStyle(target).marginLeft, '0px');
+    checkTimes(player, [100, 3], [ // FIXME: Implement limiting on group players
+      [100, 1, 0, 0], [[ // 0
+        [101, 1, 0, 1], // 1
+        [102, 1, 1, 2]]] // 2
+    ], 't = 103');
+    target.remove();
+  });
+
   // FIXME: This test can be removed when this suite is finished.
   test('sources are working for basic operations', function() {
     var players = [];
@@ -316,51 +364,145 @@ suite('group-player', function() {
       players[i].play();
   });
 
-  test('redundant animation node wrapping', function() {
+  // Test Player.pause() for the empty AnimationSequence, the empty AnimationGroup,
+  // the simple AnimationSequence, and the simple AnimationGroup.
+  // WHAT ARE THE PROPERTIES OF A PAUSED GROUP?
+  test('pausing works as expected with an empty AnimationSequence', function() {
+    tick(0);
+    var player = document.timeline.play(this.seqEmpty_source);
+    assert.equal(player.startTime, null); // FIXME: Is this correct?
+    assert.equal(player.currentTime, 0);
+    player.pause();
+    assert.equal(player.startTime, null);
+    assert.equal(player.currentTime, 0);
+  });
+
+  test('pausing works as expected with an empty AnimationGroup', function() {
+    tick(0);
+    var player = document.timeline.play(this.groupEmpty_source);
+    assert.equal(player.startTime, null); // FIXME: Is this correct?
+    assert.equal(player.currentTime, 0);
+    player.pause();
+    assert.equal(player.startTime, null);
+    assert.equal(player.currentTime, 0);
+  });
+
+  test('pausing works as expected with a simple AnimationSequence', function() {
+    tick(0);
+    console.log(this.seqSimple_source);
+    var player = document.timeline.play(this.seqSimple_source);
+    assert.equal(player.startTime, 0);
+    assert.equal(player.currentTime, 0);
+    assert.equal(player.childPlayers[0].startTime, 0);
+    assert.equal(player.childPlayers[0].currentTime, 0);
+    assert.equal(player.childPlayers[1].startTime, 500);
+    assert.equal(player.childPlayers[1].currentTime, -500);
+    tick(200);
+    assert.equal(player.startTime, 0);
+    assert.equal(player.currentTime, 200);
+    assert.equal(player.childPlayers[0].startTime, 0);
+    assert.equal(player.childPlayers[0].currentTime, 200);
+    assert.equal(player.childPlayers[1].startTime, 500);
+    assert.equal(player.childPlayers[1].currentTime, -300);
+    player.pause();
+    // assert.equal(player.startTime, null);
+    assert.equal(player.currentTime, 200); // FIXME: This result seems wrong.
+    assert.equal(player.childPlayers[0].startTime, null);
+    assert.equal(player.childPlayers[0].currentTime, 200);
+    assert.equal(player.childPlayers[1].startTime, null);
+    assert.equal(player.childPlayers[1].currentTime, -300);
+    tick(300);
+    // assert.equal(player.startTime, null);
+    assert.equal(player.currentTime, 300); // FIXME: This result seems wrong.
+    // assert.equal(player.childPlayers[0].startTime, null);
+    assert.equal(player.childPlayers[0].currentTime, 200);
+    assert.equal(player.childPlayers[1].startTime, null);
+    assert.equal(player.childPlayers[1].currentTime, -300);
+    player.play();
+    tick(300); // FIXME: Redundant tick?
+    // FIXME: None of these work at this stage.
+    // assert.equal(player.startTime, 100);
+    // assert.equal(player.currentTime, 200);
+    // assert.equal(player.childPlayers[0].startTime, 100);
+    // assert.equal(player.childPlayers[0].currentTime, 200);
+    // assert.equal(player.childPlayers[1].startTime, 600);
+    // assert.equal(player.childPlayers[1].currentTime, -300);
+    tick(700);
+    // FIXME: None of these work at this stage.
+    // assert.equal(player.startTime, 100);
+    // assert.equal(player.currentTime, 600);
+    // assert.equal(player.childPlayers[0].startTime, 100);
+    // assert.equal(player.childPlayers[0].currentTime, 500);
+    // assert.equal(player.childPlayers[1].startTime, 600);
+    // assert.equal(player.childPlayers[1].currentTime, 100);
+  });
+
+
+  test('pausing works as expected with a simple AnimationGroup', function() {
+    tick(0);
+    console.log(this.groupSimple_source);
+    var player = document.timeline.play(this.groupSimple_source);
+    assert.equal(player.startTime, 0);
+    assert.equal(player.currentTime, 0);
+    assert.equal(player.childPlayers[0].startTime, 0);
+    assert.equal(player.childPlayers[0].currentTime, 0);
+    assert.equal(player.childPlayers[1].startTime, 0);
+    assert.equal(player.childPlayers[1].currentTime, 0);
+    tick(200);
+    assert.equal(player.startTime, 0);
+    assert.equal(player.currentTime, 200);
+    assert.equal(player.childPlayers[0].startTime, 0);
+    assert.equal(player.childPlayers[0].currentTime, 200);
+    assert.equal(player.childPlayers[1].startTime, 0);
+    assert.equal(player.childPlayers[1].currentTime, 200);
+    player.pause();
+    assert.equal(player.startTime, null);
+    assert.equal(player.currentTime, 0); // FIXME: This result seems wrong.
+    assert.equal(player.childPlayers[0].startTime, null);
+    assert.equal(player.childPlayers[0].currentTime, 200);
+    assert.equal(player.childPlayers[1].startTime, null);
+    assert.equal(player.childPlayers[1].currentTime, 200);
+    tick(300);
+    assert.equal(player.startTime, null);
+    assert.equal(player.currentTime, 0); // FIXME: This result seems wrong.
+    assert.equal(player.childPlayers[0].startTime, null);
+    assert.equal(player.childPlayers[0].currentTime, 200);
+    assert.equal(player.childPlayers[1].startTime, null);
+    assert.equal(player.childPlayers[1].currentTime, 200);
+    player.play();
+    tick(300);
+    // FIXME: None of these work at this stage.
+    // assert.equal(player.startTime, 100);
+    // assert.equal(player.currentTime, 200);
+    // assert.equal(player.childPlayers[0].startTime, 100);
+    // assert.equal(player.childPlayers[0].currentTime, 200);
+    // assert.equal(player.childPlayers[1].startTime, 100);
+    // assert.equal(player.childPlayers[1].currentTime, 200);
+  });
+
+  test('pausing works as expected with a simple Animation', function() {
+    tick(0);
+    // console.log(this.sequenceSource_2);
     var target = document.createElement('div');
-    document.documentElement.appendChild(target);
-    function createAnimation(value, duration) {
-      return new Animation(target, [{marginLeft: value}, {marginLeft: value}], duration);
-    }
-    tick(100);
-    var animation = new AnimationSequence([
-      createAnimation('0px', 1),
-      new AnimationGroup([
-        new AnimationSequence([
-          createAnimation('1px', 1),
-          createAnimation('2px', 1),
-        ]),
-      ]),
-    ]);
-    var player = document.timeline.play(animation);
-    assert.equal(getComputedStyle(target).marginLeft, '0px');
-    checkTimes(player, [100, 0], [
-      [100, 0, 0, 0], [[ // 0
-        [101, -1, 0, 1], // 1
-        [102, -2, 1, 2]]] // 2
-    ], 't = 100');
-    tick(101);
-    assert.equal(getComputedStyle(target).marginLeft, '1px');
-    checkTimes(player, [100, 1], [
-      [100, 1, 0, 0], [[ // 0
-        [101, 0, 0, 1], // 1
-        [102, -1, 1, 2]]] // 2
-    ], 't = 101');
-    tick(102);
-    assert.equal(getComputedStyle(target).marginLeft, '2px');
-    assert.equal(document.timeline.currentTime, 102);
-    checkTimes(player, [100, 2], [ // FIXME: Implement limiting on group players
-      [100, 1, 0, 0], [[ // 0
-        [101, 1, 0, 1], // 1
-        [102, 0, 1, 2]]] // 2
-    ], 't = 102');
-    tick(103);
-    assert.equal(getComputedStyle(target).marginLeft, '0px');
-    checkTimes(player, [100, 3], [ // FIXME: Implement limiting on group players
-      [100, 1, 0, 0], [[ // 0
-        [101, 1, 0, 1], // 1
-        [102, 1, 1, 2]]] // 2
-    ], 't = 103');
-    target.remove();
+    var player = document.timeline.play(this.animationMargin(target));
+    assert.equal(player.startTime, 0);
+    assert.equal(player.currentTime, 0);
+    tick(200);
+    assert.equal(player.startTime, 0);
+    assert.equal(player.currentTime, 200);
+    player.pause();
+    assert.equal(player.startTime, null);
+    assert.equal(player.currentTime, 200);
+    tick(300);
+    assert.equal(player.startTime, null);
+    assert.equal(player.currentTime, 200);
+    player.play();
+    tick(300); // FIXME: Redundant tick?
+    assert.equal(player.startTime, 100);
+    assert.equal(player.currentTime, 200);
+    tick(600);
+    setTicking(true);
+    assert.equal(player.startTime, 100);
+    assert.equal(player.currentTime, 500);
   });
 });
