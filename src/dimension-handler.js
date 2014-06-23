@@ -92,7 +92,6 @@
   scope.parseAngle = parseAngle;
   scope.mergeDimensions = mergeDimensions;
 
-  scope.addPropertiesHandler(parseLengthOrPercent, mergeDimensions,
-      'left|right|top|bottom|width|height'.split('|'));
+  scope.addCSSValueHandler(parseLengthOrPercent, mergeDimensions, '12em');
 
 })(minifill, testing);

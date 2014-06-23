@@ -49,7 +49,7 @@
     }];
   }
 
-  scope.addPropertiesHandler(parseColor, mergeColors, ['color', 'backgroundColor']);
+  scope.addCSSValueHandler(parseColor, mergeColors, 'rgb(1, 2, 3)');
 
   if (TESTING) {
     testing.parseColor = parseColor;

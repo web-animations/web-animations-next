@@ -16,14 +16,32 @@
 
   var propertyHandlers = {};
 
-  function addPropertiesHandler(parser, merger, properties) {
-    for (var i = 0; i < properties.length; i++) {
-      var property = properties[i];
+  function propertiesAcceptingCSSValue(cssValue) {
+    var properties = [];
+    var style = document.createElement('div').style;
+    for (var property in style) {
+      if (style[property] !== '')
+        continue;
+      var prefixed = ['webkit', 'Moz', 'ms'].some(function(prefix) {
+        return property.startsWith(prefix);
+      });
+      if (prefixed)
+        continue;
+      style[property] = cssValue;
+      if (style[property] === cssValue)
+        properties.push(property);
+      style[property] = '';
+    }
+    console.log(cssValue, properties);
+    return properties;
+  }
+
+  scope.addCSSValueHandler = function(parser, merger, cssValue) {
+    propertiesAcceptingCSSValue(cssValue).forEach(function(property) {
       propertyHandlers[property] = propertyHandlers[property] || [];
       propertyHandlers[property].push([parser, merger]);
-    }
-  }
-  scope.addPropertiesHandler = addPropertiesHandler;
+    });
+  };
 
   function propertyInterpolation(property, left, right) {
     var handlers = left == right ? [] : propertyHandlers[property];
