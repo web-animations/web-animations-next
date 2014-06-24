@@ -39,7 +39,7 @@
     };
   }
 
-  scope.addCSSValueHandler(parseNumber, clampedMergeNumbers(0, 1), '0.5');
+  scope.addCssValueHandler(parseNumber, clampedMergeNumbers(0, 1), '0.5');
 
   scope.parseNumber = parseNumber;
   scope.mergeNumbers = mergeNumbers;

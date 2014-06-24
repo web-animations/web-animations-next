@@ -192,7 +192,7 @@
     }];
   }
 
-  scope.addCSSValueHandler(parseTransform, mergeTransforms, 'rotate(10deg) scale(2)');
+  scope.addCssValueHandler(parseTransform, mergeTransforms, 'rotate(10deg) scale(2)');
 
   if (TESTING) {
     testing.parseTransform = parseTransform;

@@ -22,21 +22,24 @@
     for (var property in style) {
       if (style[property] !== '')
         continue;
-      var prefixed = ['webkit', 'Moz', 'ms'].some(function(prefix) {
-        return property.startsWith(prefix);
+      var rejected = ['webkit', 'Moz', 'ms', 'animation', 'transition'].some(function(disallowed) {
+        return property.indexOf(disallowed) === 0;
       });
-      if (prefixed)
+      if (rejected)
         continue;
-      style[property] = cssValue;
-      if (style[property] === cssValue)
-        properties.push(property);
+      // style['content'] = 'css value' throws in IE.
+      try {
+        style[property] = cssValue;
+        if (style[property] === cssValue)
+          properties.push(property);
+      } catch (error) {}
       style[property] = '';
     }
     console.log(cssValue, properties);
     return properties;
   }
 
-  scope.addCSSValueHandler = function(parser, merger, cssValue) {
+  scope.addCssValueHandler = function(parser, merger, cssValue) {
     propertiesAcceptingCSSValue(cssValue).forEach(function(property) {
       propertyHandlers[property] = propertyHandlers[property] || [];
       propertyHandlers[property].push([parser, merger]);
