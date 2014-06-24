@@ -35,7 +35,6 @@
       } catch (error) {}
       style[property] = '';
     }
-    console.log(cssValue, properties);
     return properties;
   }
 
