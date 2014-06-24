@@ -16,7 +16,7 @@
 
   var propertyHandlers = {};
 
-  function propertiesAcceptingCSSValue(cssValue) {
+  function propertiesAcceptingCssValue(cssValue) {
     var properties = [];
     var style = document.createElement('div').style;
     for (var property in style) {
@@ -39,7 +39,7 @@
   }
 
   scope.addCssValueHandler = function(parser, merger, cssValue) {
-    propertiesAcceptingCSSValue(cssValue).forEach(function(property) {
+    propertiesAcceptingCssValue(cssValue).forEach(function(property) {
       propertyHandlers[property] = propertyHandlers[property] || [];
       propertyHandlers[property].push([parser, merger]);
     });
