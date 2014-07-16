@@ -43,9 +43,14 @@ suite('group-player', function() {
           ]);
     };
 
+    var animSimple_target = document.createElement('div');
+    this.elements.push(animSimple_target);
+    var animSimple_source = animationColor(animSimple_target);
+
     var seqEmpty_source = sequenceEmpty();
 
     var seqSimple_target = document.createElement('div');
+    this.elements.push(seqSimple_target);
     var seqSimple_source = sequenceWithEffects(seqSimple_target);
 
     var seqWithSeq_target = document.createElement('div');
@@ -72,6 +77,7 @@ suite('group-player', function() {
     var groupEmpty_source = groupEmpty();
 
     var groupSimple_target = document.createElement('div');
+    this.elements.push(groupSimple_target);
     var groupSimple_source = groupWithEffects(groupSimple_target);
 
     var groupWithSeq_target = document.createElement('div');
@@ -94,6 +100,8 @@ suite('group-player', function() {
 
     var groupWithEmptyGroup_source = new AnimationGroup([groupEmpty()]);
     var groupWithEmptySeq_source = new AnimationGroup([sequenceEmpty()]);
+
+    this.animSimple_source = animSimple_source;
 
     this.seqEmpty_source = seqEmpty_source;
     this.seqSimple_source = seqSimple_source;
@@ -460,6 +468,7 @@ suite('group-player', function() {
     // assert.equal(getComputedStyle(this.target).marginLeft, '0px');
   });
 
+  // START RENEE'S TESTS.
   // FIXME: This test can be removed when this suite is finished.
   test('sources are working for basic operations', function() {
     var players = [];
@@ -543,10 +552,22 @@ suite('group-player', function() {
     tick(301);
     checkTimes(player, [101, 200], [[101, 200], [601, -300]], 't = 301');
 
-    tick(700);
-    checkTimes(player, [101, 599], [[101, 500], [601, 99]], 't = 700');
+    tick(701);
+    checkTimes(player, [101, 600], [[101, 500], [601, 100]], 't = 701');
+
+    player.pause();
+    tick(711);
+    checkTimes(player, [NaN, 600], [[NaN, 500], [NaN, 100]], 't = 711');
+
+    player.play();
+    tick(721);
+    checkTimes(player, [121, 600], [[121, 500], [621, 100]], 't = 721');
+
+    tick(1321);
+    checkTimes(player, [121, 1000], [[121, 500], [621, 500]], 't = 1321');
   });
 
+  // FIXME: This test fails because of a known issue.
   test('pausing works as expected with an AnimationSequence inside an AnimationSequence', function() {
     var player = document.timeline.play(this.seqWithSeq_source);
     tick(0);
@@ -691,14 +712,48 @@ suite('group-player', function() {
             [1830, -120]]],
         't = 1710');
 
-    tick(2400);
+    // These steps finish (2, 0) but don't finish (2, 1). This (somehow) causes the currentTime of
+    // (2, 0) to advance past its duration after it has been paused and unpaused.
+    tick(1840);
     checkTimes(
         player,
-        [330, 2000], [
+        [330, 1510], [
           [330, 500],
           [830, 500], [
             [1330, 500],
-            [1830, 500]]],
+            [1830, 10]]],
+        't = 1840');
+
+    player.pause();
+    tick(1850);
+    checkTimes(
+        player,
+        [NaN, 1510], [
+          [NaN, 500],
+          [NaN, 500], [
+            [NaN, 500],
+            [NaN, 10]]],
+        't = 1850');
+
+    player.play();
+    tick(1860);
+    checkTimes(
+        player,
+        [350, 1510], [
+          [350, 500],
+          [850, 500], [
+            [1350, 500], // FIXME: This check fails because of a known issue.
+            [1850, 10]]],
+        't = 1850');
+
+    tick(2400);
+    checkTimes(
+        player,
+        [350, 2000], [
+          [350, 500],
+          [850, 500], [
+            [1350, 500], // FIXME: This check fails because of a known issue.
+            [1850, 500]]],
         't = 2400');
   });
 
@@ -914,4 +969,266 @@ suite('group-player', function() {
     assert.equal(p._childPlayers[0]._player.playState, 'finished');
     assert.equal(p._childPlayers[1]._player.playState, 'finished');
   });
+
+  test('pausing works as expected with an empty AnimationGroup', function() {
+    var player = document.timeline.play(this.groupEmpty_source);
+    tick(0);
+    assert.equal(player.startTime, 0);
+    assert.equal(player.currentTime, 0);
+
+    player.pause();
+    assert(isNaN(player.startTime));
+    assert.equal(player.currentTime, 0);
+  });
+
+  test('pausing works as expected with a simple AnimationGroup', function() {
+    var player = document.timeline.play(this.groupSimple_source);
+    tick(0);
+    checkTimes(player, [0, 0], [[0, 0], [0, 0]], 't = 0');
+
+    tick(200);
+    checkTimes(player, [0, 200], [[0, 200], [0, 200]], 't = 200');
+
+    player.pause();
+    checkTimes(player, [NaN, 200], [[NaN, 200], [NaN, 200]], 't = 200');
+
+    tick(300);
+    checkTimes(player, [NaN, 200], [[NaN, 200], [NaN, 200]], 't = 300');
+
+    player.play();
+    tick(301);
+    checkTimes(player, [101, 200], [[101, 200], [101, 200]], 't = 301');
+
+    tick(601);
+    checkTimes(player, [101, 500], [[101, 500], [101, 500]], 't = 601');
+
+    player.pause();
+    checkTimes(player, [NaN, 500], [[NaN, 500], [NaN, 500]], 't = 601');
+
+    player.play();
+    tick(602);
+    checkTimes(player, [602, 0], [[602, 0], [602, 0]], 't = 602');
+  });
+
+  // FIXME: This test fails because of a known issue.
+  test('pausing works as expected with an AnimationSequence inside an AnimationGroup', function() {
+    var player = document.timeline.play(this.groupWithSeq_source);
+    tick(0);
+    checkTimes(
+        player,
+        [0, 0], [
+          [0, 0],
+          [0, 0], [
+            [0, 0],
+            [500, -500]]],
+        't = 0');
+
+    tick(200);
+    checkTimes(
+        player,
+        [0, 200], [
+          [0, 200],
+          [0, 200], [
+            [0, 200],
+            [500, -300]]],
+        't = 200');
+
+    player.pause();
+    checkTimes(
+        player,
+        [NaN, 200], [
+          [NaN, 200],
+          [NaN, 200], [
+            [NaN, 200],
+            [NaN, -300]]],
+        't = 200');
+
+    tick(310);
+    checkTimes(
+        player,
+        [NaN, 200], [
+          [NaN, 200],
+          [NaN, 200], [
+            [NaN, 200],
+            [NaN, -300]]],
+        't = 310');
+
+    player.play();
+    tick(320);
+    checkTimes(
+        player,
+        [120, 200], [
+          [120, 200],
+          [120, 200], [
+            [120, 200],
+            [620, -300]]],
+        't = 320');
+
+    tick(800);
+    checkTimes(
+        player,
+        [120, 680], [
+          [120, 500],
+          [120, 500], [
+            [120, 500],
+            [620, 180]]],
+        't = 800');
+
+    player.pause();
+    checkTimes(
+        player,
+        [NaN, 680], [
+          [NaN, 500],
+          [NaN, 500], [
+            [NaN, 500],
+            [NaN, 180]]],
+        't = 800');
+
+    tick(900);
+    checkTimes(
+        player,
+        [NaN, 680], [
+          [NaN, 500],
+          [NaN, 500], [
+            [NaN, 500],
+            [NaN, 180]]],
+        't = 900');
+
+    player.play();
+    tick(910);
+    checkTimes(
+        player,
+        [230, 680], [
+          [230, 500],
+          [230, 500], [
+            [230, 500], // FIXME: This check fails because of a known issue.
+            [730, 180]]],
+        't = 910');
+
+    tick(1300);
+    checkTimes(
+        player,
+        [230, 1000], [
+          [230, 500],
+          [230, 500], [
+            [230, 500], // FIXME: This check fails because of a known issue.
+            [730, 500]]],
+        't = 1300');
+
+    player.pause();
+    checkTimes(
+        player,
+        [NaN, 1000], [
+          [NaN, 500],
+          [NaN, 500], [
+            [NaN, 500], // FIXME: This check fails because of a known issue.
+            [NaN, 500]]],
+        't = 1300');
+
+    tick(1310);
+    checkTimes(
+        player,
+        [NaN, 1000], [
+          [NaN, 500],
+          [NaN, 500], [
+            [NaN, 500], // FIXME: This check fails because of a known issue.
+            [NaN, 500]]],
+        't = 1310');
+
+    player.play();
+    tick(1400);
+    checkTimes(
+        player,
+        [1400, 0], [
+          [1400, 0],
+          [1400, 0], [
+            [1400, 0],
+            [1900, -500]]],
+        't = 1400');
+  });
+
+  // test('pausing works as expected with an AnimationGroup inside an AnimationGroup', function() {
+  //   tick(0);
+  //   var player = document.timeline.play(this.groupWithGroup_source);
+  //   // check: player,
+  //   //        player.childPlayers[0],
+  //   //        player.childPlayers[1],
+  //   //        player.childPlayers[2],
+  //   //        player.childPlayers[2].childPlayers[0],
+  //   //        player.childPlayers[2].childPlayers[1]
+  //   // assert.equal(player.startTime, X);
+  //   // assert.equal(player.currentTime, X);
+  //   // assert.equal(player.childPlayers[0].startTime, X);
+  //   // assert.equal(player.childPlayers[0].currentTime, X);
+  //   // assert.equal(player.childPlayers[1].startTime, X);
+  //   // assert.equal(player.childPlayers[1].currentTime, X);
+  //   // assert.equal(player.childPlayers[2].startTime, X);
+  //   // assert.equal(player.childPlayers[2].currentTime, X);
+  //   // assert.equal(player.childPlayers[2].childPlayers[0].startTime, X);
+  //   // assert.equal(player.childPlayers[2].childPlayers[0].currentTime, X);
+  //   // assert.equal(player.childPlayers[2].childPlayers[1].startTime, X);
+  //   // assert.equal(player.childPlayers[2].childPlayers[1].currentTime, X);
+  //   tick(200);
+  //   // check
+  //   player.pause();
+  //   // check
+  //   tick(300);
+  //   // check
+  //   player.play();
+  //   tick(300);
+  //   // check
+  // });
+
+  // test('pausing works as expected with an empty AnimationSequence inside an AnimationGroup', function() {
+  //   tick(0);
+  //   var player = document.timeline.play(this.groupWithEmptySeq_source);
+  //   // check: player,
+  //   //        player.childPlayers[0]
+  //   // assert.equal(player.startTime, X);
+  //   // assert.equal(player.currentTime, X);
+  //   // assert.equal(player.childPlayers[0].startTime, X);
+  //   // assert.equal(player.childPlayers[0].currentTime, X);
+  //   player.pause();
+  //   // check
+  // });
+
+  // test('pausing works as expected with an empty AnimationGroup inside an AnimationGroup', function() {
+  //   tick(0);
+  //   var player = document.timeline.play(this.groupWithEmptyGroup_source);
+  //   // check: player,
+  //   //        player.childPlayers[0]
+  //   // assert.equal(player.startTime, X);
+  //   // assert.equal(player.currentTime, X);
+  //   // assert.equal(player.childPlayers[0].startTime, X);
+  //   // assert.equal(player.childPlayers[0].currentTime, X);
+  //   player.pause();
+  //   // check
+  // });
+
+  // // FIXME: This is just here as a baseline during development. REMOVE.
+  // test('pausing works as expected with a simple Animation', function() {
+  //   tick(0);
+  //   var target = document.createElement('div');
+  //   var player = document.timeline.play(this.animationMargin(target));
+  //   assert.equal(player.startTime, 0);
+  //   assert.equal(player.currentTime, 0);
+  //   tick(200);
+  //   assert.equal(player.startTime, 0);
+  //   assert.equal(player.currentTime, 200);
+  //   player.pause();
+  //   assert.equal(player.startTime, null);
+  //   assert.equal(player.currentTime, 200);
+  //   tick(300);
+  //   assert.equal(player.startTime, null);
+  //   assert.equal(player.currentTime, 200);
+  //   player.play();
+  //   tick(300);
+  //   assert.equal(player.startTime, 100);
+  //   assert.equal(player.currentTime, 200);
+  //   tick(600);
+  //   setTicking(true);
+  //   assert.equal(player.startTime, 100);
+  //   assert.equal(player.currentTime, 500);
+  // });
+
 });
