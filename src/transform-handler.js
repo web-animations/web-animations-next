@@ -239,7 +239,7 @@
     }];
   }
 
-  scope.addPropertiesHandler(parseTransform, mergeTransforms, ['transform']);
+  scope.addCssValueHandler(parseTransform, mergeTransforms, 'rotate(10deg) scale(2)');
 
   if (WEB_ANIMATIONS_TESTING)
     testing.parseTransform = parseTransform;
