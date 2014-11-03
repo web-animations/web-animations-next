@@ -221,7 +221,7 @@
           (expectation === parsedExpectation ? '' : ' (parsed as [' + sanitizeUrls(roundNumbers(parsedExpectation)) + '])');
       value = pass ? expectation : sanitizeUrls(value);
       t.step(function() {
-        if (fraction <= 0 || fraction >= 1) {
+        if (fraction < 0 || fraction > 1) {
           assert_true(true);
         }
         else {
