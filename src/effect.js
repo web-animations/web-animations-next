@@ -20,11 +20,9 @@
     var interpolations = makeInterpolations(propertySpecificKeyframeGroups);
     return function(target, fraction) {
       if (fraction != null) {
-        // FIXME: Renee, this is where we are filtering out time fractions!
+        // FIXME: Renee, this is where we are removing fractions
         for (var i = 0; i < interpolations.length && interpolations[i].startTime <= fraction; i++)
           if (interpolations[i].endTime >= fraction && interpolations[i].endTime != interpolations[i].startTime) {
-        // for (var i = 0; i < interpolations.length; i++)
-          // if (interpolations[i].endTime != interpolations[i].startTime) {
             var offsetFraction = fraction - interpolations[i].startTime;
             var localDuration = interpolations[i].endTime - interpolations[i].startTime;
             var scaledLocalTime = interpolations[i].easing(offsetFraction / localDuration);
