@@ -54,6 +54,7 @@ var interpolationTests = [
   'blink/interpolation/shape-image-threshold.html',
   'blink/interpolation/shape-margin.html',
   'blink/interpolation/shape-outside.html',
+  'blink/interpolation/text-decoration-color-interpolation.html',
   'blink/interpolation/text-indent-interpolation.html',
   'blink/interpolation/text-shadow-interpolation.html',
   'blink/interpolation/top-interpolation.html',
@@ -83,6 +84,5 @@ var interpolationFailures = [
   'blink/interpolation/border-spacing-interpolation.html',
   'blink/interpolation/filter-interpolation.html',
   'blink/interpolation/list-style-image-interpolation.html',
-  'blink/interpolation/text-decoration-color-interpolation.html',
   'blink/interpolation/transform-matrix-interpolation.html',
 ];
