@@ -75,12 +75,10 @@
 
   var maxifillTest = minifillTest.concat(
       'test/js/animation-constructor.js',
-      'test/js/child-player-pause-after-finish-bug.js',
       'test/js/effect-callback.js',
       'test/js/group-constructors.js',
       'test/js/group-player.js',
       'test/js/group-player-finish-event.js',
-      'test/js/tick-after-pause-bug.js',
       'test/js/timeline.js');
 
   // This object specifies the source and test files for different Web Animation build targets.
