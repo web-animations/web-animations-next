@@ -51,7 +51,6 @@
       'test/js/player-finish-event.js',
       'test/js/property-interpolation.js',
       'test/js/tick.js',
-      'test/js/timing.js',
       'test/js/transform-handler.js'];
 
   var maxifillTest = minifillTest.concat(
@@ -60,7 +59,8 @@
       'test/js/group-constructors.js',
       'test/js/group-player.js',
       'test/js/group-player-finish-event.js',
-      'test/js/timeline.js');
+      'test/js/timeline.js',
+      'test/js/timing.js');
 
   // This object specifies the source and test files for different Web Animation build targets.
   var targetConfig = {
