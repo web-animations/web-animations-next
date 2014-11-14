@@ -32,10 +32,18 @@
 
   var sequenceNumber = 0;
   function bind(player, target, effect, timing) {
-    var animation = 'fixme';
     var last = undefined;
     timing = shared.normalizeTimingInput(timing);
     var callback = function() {
+      var animation = null;
+      if (player.source) {
+        animation = player.source;
+      } else if (player._player.source) {
+        // TODO: This is for element.animate: there's no real animation here,
+        // and this object just looks like {target: ...}.
+        animation = player._player.source;
+      }
+
       var t = callback._player ? callback._player.currentTime : null;
       if (t !== null) {
         t = shared.calculateTimeFraction(shared.calculateActiveDuration(timing), t, timing);
