@@ -119,11 +119,10 @@ suite('timing-tests', function() {
     var target = document.createElement('div');
     document.body.appendChild(target);
 
-    var animation = new Animation(target, [
+    var player = target.animate([
       { background: 'blue' },
       { background: 'red' }
     ], { duration: 1000 });
-    var player = document.timeline.play(animation);
     tick(100);
     player.pause();
 
