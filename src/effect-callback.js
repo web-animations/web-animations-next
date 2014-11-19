@@ -14,18 +14,17 @@
 (function(shared, scope, testing) {
 
   var element = document.createElement('div');
-  var originalAnimate = Element.prototype.animate;
+  var originalInternalAnimate = shared.internalAnimate;
 
-  Element.prototype.animate = function(effect, timing) {
+  shared.internalAnimate = function(target, effect, timing) {
     var player;
     if (typeof effect == 'function') {
-      player = new scope.Player(originalAnimate.apply(element, [[], timing]));
-      bind(player, this, effect, timing);
+      player = new scope.Player(originalInternalAnimate(element, [], timing));
+      bind(player, target, effect, timing);
     } else {
-      player = new scope.Player(originalAnimate.apply(this, [effect, timing]));
+      player = new scope.Player(originalInternalAnimate(target, effect, timing));
     }
     // FIXME: See if we can just use the maxifill player source and remove this all together.
-    player._player.source = {target: this};
     window.document.timeline._addPlayer(player);
     return player;
   };

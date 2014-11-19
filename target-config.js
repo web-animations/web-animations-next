@@ -53,6 +53,7 @@
 
   var maxifillSrc = [
       'src/timeline.js',
+      'src/maxifill-animatable.js',
       'src/maxifill-player.js',
       'src/animation-constructor.js',
       'src/effect-callback.js',

@@ -12,14 +12,10 @@
 //     See the License for the specific language governing permissions and
 // limitations under the License.
 
-(function(shared, scope) {
-  function internalAnimate(target, effectInput, timingInput) {
-    return scope.timeline._play(scope.Animation(target, effectInput, timingInput));
+(function() {
+  // Revert to the spec behavior, as the maxifill provides Animation.
+  Element.prototype.animate = function(effectInput, timingInput) {
+    var anim = new Animation(this, effectInput, timingInput);
+    return this.ownerDocument.timeline.play(anim);
   };
-
-  window.Element.prototype.animate = function(effectInput, timingInput) {
-    return shared.internalAnimate(this, effectInput, timingInput);
-  };
-
-  shared.internalAnimate = internalAnimate;
-})(webAnimationsShared, webAnimationsMinifill);
+})();
