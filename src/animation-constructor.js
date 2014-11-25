@@ -109,7 +109,7 @@
     // TODO: Handle effect callback.
     if (source instanceof window.Animation) {
       var target = source.target ? source.target : nullTarget;
-      var player = target.animate(source._effect, source.timing);
+      var player = shared.internalAnimate(target, source._effect, source.timing);
       player.source = source;
       source.player = player;
       return player;
@@ -140,7 +140,7 @@
 
   window.Element.prototype.getAnimationPlayers = function() {
     return document.timeline.getAnimationPlayers().filter(function(player) {
-      return player._player.source !== null && player._player.source.target == this;
+      return player.source !== null && player.source.target == this;
     }.bind(this));
   };
 
