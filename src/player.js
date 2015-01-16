@@ -112,6 +112,7 @@
       return 'running';
     },
     play: function() {
+      console.log('p' + this.uid + '.play();');
       this.paused = false;
       if (this.finished || this._idle) {
         this._currentTime = this._playbackRate > 0 ? 0 : this._totalDuration;
@@ -124,6 +125,7 @@
       this._ensureAlive();
     },
     pause: function() {
+      console.log('p' + this.uid + '.pause();');
       if (!this.finished && !this.paused && !this._idle) {
         this._currentTimePending = true;
       }
@@ -138,6 +140,7 @@
       this._currentTimePending = false;
     },
     cancel: function() {
+      console.log('p' + this.uid + '.cancel();');
       this._inEffect = false;
       this._idle = true;
       this.currentTime = 0;

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!--
+<script src="https://rawgit.com/web-animations/web-animations-js/master/web-animations-next.min.js"></script>
+-->
+<script src="web-animations-next.dev.js"></script>
+<style>
+#div-1, #div-2, #div-3 {
+  height: 100px;
+  width: 100px;
+}
+#div-1 {
+  background-color: red;
+}
+#div-2 {
+  background-color: blue;
+}
+#div-3 {
+  background-color: green;
+}
+</style>
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body>
+  <div id="div-1"></div>
+  <div id="div-2"></div>
+  <div id="div-3"></div>
+</body>
+</html>
+<script>
+var div1 = document.querySelector('#div-1');
+var div2 = document.querySelector('#div-2');
+var div3 = document.querySelector('#div-3');
+var opts = {duration: 2000, fill: 'both'};
+var a1 = new Animation(div1, [{transform: 'translate(0,0)'}, {transform: 'translate(300px,300px)'}], opts);
+var a2 = new Animation(div2, [{transform: 'translate(0,0)'}, {transform: 'translate(100px,50px)'}], opts);
+var a3 = new Animation(div3, [{transform: 'translate(0,0)'}, {transform: 'translate(300px,-200px)'}], opts);
+var group = new AnimationGroup([a1, a2, a3]);
+var player = document.timeline.play(group);
+player.pause();
+</script>

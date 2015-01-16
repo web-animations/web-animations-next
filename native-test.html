@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<style>
+#div1, #div2, #div3 {
+  height: 100px;
+  width: 100px;
+}
+#div1 {
+  background-color: red;
+}
+#div2 {
+  background-color: blue;
+}
+#div3 {
+  background-color: green;
+}
+</style>
+<div id="div1"></div>
+<div id="div2"></div>
+<div id="div3"></div>
+<div id='dummy'></div>
+<script>
+var p0 = dummy.animate([], {"delay":0,"endDelay":0,"fill":"both","iterationStart":0,"iterations":1,"duration":2000,"playbackRate":1,"direction":"normal"});
+p0.cancel();
+p0.play();
+var p1 = div1.animate([{"transform":"translate(0,0)"},{"transform":"translate(300px,300px)"}], {"duration":2000,"fill":"both"});
+p1.cancel();
+var p2 = div2.animate([{"transform":"translate(0,0)"},{"transform":"translate(100px,50px)"}], {"duration":2000,"fill":"both"});
+p2.cancel();
+p2.play();
+var p3 = div3.animate([{"transform":"translate(0,0)"},{"transform":"translate(300px,-200px)"}], {"duration":2000,"fill":"both"});
+p3.cancel();
+p3.play();
+p0.cancel();
+p0.play();
+p1.play();
+p2.play();
+p3.play();
+p0.pause();
+p1.pause();
+p2.pause();
+p3.pause();
+</script>
