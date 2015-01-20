@@ -52,6 +52,7 @@
   };
 
   var nullTarget = document.createElementNS('http://www.w3.org/1999/xhtml', 'div');
+  nullTarget.id = 'nullTarget';
   scope.newUnderlyingPlayerForAnimation = function(animation) {
     var target = animation.target || nullTarget;
     var effect = animation._effect;
@@ -104,7 +105,7 @@
     for (var i = 0; i < this.source.children.length; i++) {
       var child = this.source.children[i];
       var childPlayer;
-
+      console.log(this._childPlayers);
       if (i >= this._childPlayers.length) {
         childPlayer = window.document.timeline.play(child);
         this._childPlayers.push(childPlayer);

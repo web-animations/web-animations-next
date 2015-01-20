@@ -17,7 +17,7 @@
   var uid = 0;
 
   window.Element.prototype.animate = function(effectInput, timingInput) {
-    console.log('var p' + uid + ' = element.animate(' + JSON.stringify(effectInput) + ', ' + JSON.stringify(timingInput) + ');');
+    console.log('var p' + uid + ' = div' + uid + '.animate(' + JSON.stringify(effectInput) + ', ' + JSON.stringify(timingInput) + ');');
     var p = scope.timeline._play(scope.Animation(this, effectInput, timingInput));
     p.uid = uid++;
     return p;

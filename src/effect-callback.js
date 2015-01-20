@@ -23,6 +23,12 @@
     var last = undefined;
     timing = shared.normalizeTimingInput(timing);
     var callback = function() {
+      // console.assert(document.timeline.currentTime > 2000 || false);
+      if(!callback._player)
+        console.log('no player for callback!');
+      else if (callback._player.currentTime !== 0)
+        console.log('callback player currentTime is: ' + callback._player.currentTime, callback._player);
+      // RENEE: In groups bug, callback._player.currentTime is null here!
       var t = callback._player ? callback._player.currentTime : null;
       if (t !== null) {
         t = shared.calculateTimeFraction(shared.calculateActiveDuration(timing), t, timing);
@@ -35,7 +41,7 @@
         effect(t, target, player.source);
       last = t;
     };
-
+    console.log(player.currentTime);
     callback._player = player;
     callback._registered = false;
     callback._sequenceNumber = sequenceNumber++;
@@ -55,14 +61,17 @@
       requestAnimationFrame(tick);
     }
   }
-
   function tick(t) {
+    // console.log('callback tick');
     var updating = callbacks;
     callbacks = [];
     updating.sort(function(left, right) {
       return left._sequenceNumber - right._sequenceNumber;
     });
     updating.filter(function(callback) {
+      // console.log('TICK FILTER');
+      // if(!document.timeline.currentTime || document.timeline.currentTime < 3000) console.log('CALLBACK PLAYER CURRENT TIME:', callback._player.currentTime, callback._player._player.nuid);
+      if (callback._player.playState == 'pending') return false;
       callback();
       if (!callback._player || callback._player.finished || callback._player.paused)
         callback._registered = false;

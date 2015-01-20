@@ -200,6 +200,9 @@
     var directedTime = currentDirectionIsForwards ? iterationTime : iterationDuration - iterationTime;
     var timeFraction = directedTime / iterationDuration;
     return iterationDuration * timing.easing(timeFraction);
+    // var tt = iterationDuration * timing.easing(timeFraction);
+    // console.log('Transformed Time: ' + tt);
+    // return tt;
   }
 
   function calculateTimeFraction(activeDuration, localTime, timing) {

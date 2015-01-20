@@ -28,6 +28,7 @@
   };
 
   window.AnimationGroup = function() {
+    console.log('make group');
     constructor.apply(this, arguments);
   };
 
@@ -57,6 +58,8 @@
       var player = underlyingPlayer._wrapper;
       if (!player.source)
         return;
+      console.log('time fraction: ' + tf);
+      // RENEE: This seems to be the issue
       if (tf == null) {
         player._removePlayers();
         return;
@@ -72,6 +75,7 @@
   };
 
   scope.bindPlayerForGroup = function(player) {
+    console.log('bind player');
     player._player._wrapper = player;
     player._isGroup = true;
     scope.awaitStartTime(player);

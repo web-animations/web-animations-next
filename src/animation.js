@@ -25,6 +25,7 @@
     // Returns whether the animation is in effect or not after the timing update.
     animation._update = function(localTime) {
       timeFraction = animationNode(localTime);
+      console.log('TIME FRACTION: ' + timeFraction);
       return timeFraction !== null;
     };
     animation._clear = function() {
