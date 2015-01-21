@@ -153,8 +153,8 @@
       this._player.removeEventListener(type, (handler && handler._wrapper) || handler);
     },
     _removePlayers: function() {
-      console.log('number of children: ' + this._childPlayers.length);
-      console.log('remove players from', this);
+      // console.log('number of children: ' + this._childPlayers.length);
+      // console.log('remove players from', this);
       while (this._childPlayers.length)
         this._childPlayers.pop().cancel();
     },

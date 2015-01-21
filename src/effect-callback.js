@@ -24,10 +24,10 @@
     timing = shared.normalizeTimingInput(timing);
     var callback = function() {
       // console.assert(document.timeline.currentTime > 2000 || false);
-      if(!callback._player)
-        console.log('no player for callback!');
-      else if (callback._player.currentTime !== 0)
-        console.log('callback player currentTime is: ' + callback._player.currentTime, callback._player);
+      // if(!callback._player)
+        // console.log('no player for callback!');
+      // else if (callback._player.currentTime !== 0)
+        // console.log('callback player currentTime is: ' + callback._player.currentTime, callback._player);
       // RENEE: In groups bug, callback._player.currentTime is null here!
       var t = callback._player ? callback._player.currentTime : null;
       if (t !== null) {
@@ -41,7 +41,7 @@
         effect(t, target, player.source);
       last = t;
     };
-    console.log(player.currentTime);
+    // console.log(player.currentTime);
     callback._player = player;
     callback._registered = false;
     callback._sequenceNumber = sequenceNumber++;

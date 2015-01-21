@@ -63,18 +63,16 @@
       }
     },
     get currentTime() {
-      // console.log('GET CURREN TIME');
-      // console.log(this.playState);
       var ct = function() {
         if (this._idle || this._currentTimePending)
           return null;
         return this._currentTime;
       }.bind(this)();
-      // console.log('console.log(p' + this.uid + '.currentTime + " | ' + ct + '");');
+      console.log('console.log(p' + this.uid + '.currentTime + " | ' + ct + '");');
       return ct;
     },
     set currentTime(newTime) {
-      // console.log('p' + this.uid + '.currentTime = ' + newTime + ';');
+      console.log('p' + this.uid + '.currentTime = ' + newTime + ';');
       newTime = +newTime;
       if (isNaN(newTime))
         return;
@@ -90,11 +88,11 @@
     },
     get startTime() {
       var st = this._startTime;
-      // console.log('console.log(p' + this.uid + '.startTime + " | ' + st + '");');
+      console.log('console.log(p' + this.uid + '.startTime + " | ' + st + '");');
       return st;
     },
     set startTime(newTime) {
-      // console.log('p' + this.uid + '.startTime = ' + newTime + ';');
+      console.log('p' + this.uid + '.startTime = ' + newTime + ';');
       newTime = +newTime;
       if (isNaN(newTime))
         return;
@@ -106,7 +104,7 @@
     },
     get playbackRate() {
       var pr = this._playbackRate;
-      // console.log('console.log(p' + this.uid + '.playbackRate + " | ' + pr + '");');
+      console.log('console.log(p' + this.uid + '.playbackRate + " | ' + pr + '");');
       return pr;
     },
     get finished() {
@@ -114,8 +112,7 @@
         return !this._idle && (this._playbackRate > 0 && this._currentTime >= this._totalDuration ||
             this._playbackRate < 0 && this._currentTime <= 0);
       }.bind(this)();
-      // fin = undefined;
-      // console.log('console.log(p' + this.uid + '.finished + " | ' + fin + '");');
+      console.log('console.log(p' + this.uid + '.finished + " | ' + fin + '");');
       return fin;
     },
     get _totalDuration() { return this._source._totalDuration; },
@@ -131,11 +128,11 @@
           return 'finished';
         return 'running';
       }.bind(this)();
-      // console.log('console.log(p' + this.uid + '.playState + " | ' + ps + '");');
+      console.log('console.log(p' + this.uid + '.playState + " | ' + ps + '");');
       return ps;
     },
     play: function() {
-      // console.log('p' + this.uid + '.play();');
+      console.log('p' + this.uid + '.play();');
       this.paused = false;
       if (this.finished || this._idle) {
         this._currentTime = this._playbackRate > 0 ? 0 : this._totalDuration;
@@ -148,17 +145,15 @@
       this._ensureAlive();
     },
     pause: function() {
-      // console.log('p' + this.uid + '.pause();');
+      console.log('p' + this.uid + '.pause();');
       if (!this.finished && !this.paused && !this._idle) {
-        console.log('CURRENT TIME PENDING');
         this._currentTimePending = true;
       }
       this._startTime = null;
       this.paused = true;
-      console.log('CURRENT TIME AFTER PAUSE:', this.currentTime);
     },
     finish: function() {
-      // console.log('p' + this.uid + '.finish();');
+      console.log('p' + this.uid + '.finish();');
       if (this._idle)
         return;
       this.currentTime = this._playbackRate > 0 ? this._totalDuration : 0;
@@ -166,26 +161,25 @@
       this._currentTimePending = false;
     },
     cancel: function() {
-      // console.log('p' + this.uid + '.cancel();');
+      console.log('p' + this.uid + '.cancel();');
       this._inEffect = false;
       this._idle = true;
       this.currentTime = 0;
       this._startTime = null;
-      console.log('cancel internal. current time', this._currentTime);
     },
     reverse: function() {
-      // console.log('p' + this.uid + '.reverse();');
+      console.log('p' + this.uid + '.reverse();');
       this._playbackRate *= -1;
       this._startTime = null;
       this.play();
     },
     addEventListener: function(type, handler) {
-      // console.log('p' + this.uid + '.addEventListener();');
+      console.log('p' + this.uid + '.addEventListener();');
       if (typeof handler == 'function' && type == 'finish')
         this._finishHandlers.push(handler);
     },
     removeEventListener: function(type, handler) {
-      // console.log('p' + this.uid + '.removeEventListener();');
+      console.log('p' + this.uid + '.removeEventListener();');
       if (type != 'finish')
         return;
       var index = this._finishHandlers.indexOf(handler);
@@ -206,8 +200,6 @@
       this._finishedFlag = finished;
     },
     _tick: function(timelineTime) {
-      // console.log(this.currentTime);
-      // console.log('tick');
       if (!this._idle && !this.paused) {
         if (this._startTime == null)
           this.startTime = timelineTime - this._currentTime / this.playbackRate;
@@ -217,7 +209,6 @@
 
       this._currentTimePending = false;
       this._fireEvents(timelineTime);
-      // console.log(this.currentTime);
       return !this._idle && (this._inEffect || !this._finishedFlag);
     },
   };

@@ -1,7 +1,4 @@
 <!DOCTYPE html>
-<!--
-<script src="https://rawgit.com/web-animations/web-animations-js/master/web-animations-next.min.js"></script>
--->
 <!-- <script src="web-animations-next.dev.js"></script> -->
 <script src="patchPlayer.js"></script>
 <script src="web-animations-next.min.js"></script>
@@ -40,9 +37,6 @@ var a2 = new Animation(div2, [{transform: 'translate(0,0)'}, {transform: 'transl
 var a3 = new Animation(div3, [{transform: 'translate(0,0)'}, {transform: 'translate(300px,-200px)'}], opts);
 var group = new AnimationGroup([a1, a2, a3]);
 var player = document.timeline.play(group);
-// setTimeout(function() {player.pause();}, 1);
 player.pause();
-// player.currentTime = 1000;
-console.log(player);
 console.log('done');
 </script>

@@ -105,7 +105,7 @@
     for (var i = 0; i < this.source.children.length; i++) {
       var child = this.source.children[i];
       var childPlayer;
-      console.log(this._childPlayers);
+      // console.log(this._childPlayers);
       if (i >= this._childPlayers.length) {
         childPlayer = window.document.timeline.play(child);
         this._childPlayers.push(childPlayer);
