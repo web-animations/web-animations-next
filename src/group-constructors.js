@@ -55,11 +55,8 @@
     var underlyingPlayer;
     var ticker = function(tf) {
       var player = underlyingPlayer._wrapper;
-      // if (player.playState == 'pending') return;
-
       if (!player.source)
         return;
-      // console.log('time fraction: ' + tf);
       if (tf == null) {
         player._removePlayers();
         return;

@@ -34,7 +34,6 @@
       });
     },
     play: function(source) {
-      // console.log('TIMELINE PLAY', source);
       var player = new scope.Player(source);
       this._players.push(player);
       scope.restartWebAnimationsNextTick();

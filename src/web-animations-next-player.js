@@ -69,7 +69,6 @@
       }
     },
     get currentTime() {
-      // console.log('INNER PLAYER PENDING: ', this._player._currentTimePending);
       return this._player.currentTime;
     },
     set currentTime(v) {
@@ -106,15 +105,11 @@
       });
     },
     pause: function() {
-      // console.log('INNER PLAYER PENDING: ', this._player._currentTimePending, this._player.uid);
-      // console.log('PAUSE INNER PLAYER', this._player.uid);
       this._player.pause();
-      // this._player.currentTime = 0;
       this._register();
       this._forEachChild(function(child) {
         child.pause();
       });
-      // console.log('INNER PLAYER PENDING: ', this._player._currentTimePending, this._player.uid);
     },
     finish: function() {
       this._player.finish();
@@ -122,11 +117,9 @@
       // TODO: child players??
     },
     cancel: function() {
-      // console.log('cancel player. current time:', this._player.currentTime, this._player.nuid, this._player.uid);
       this._player.cancel();
       this._register();
       this._removePlayers();
-      // console.log('player cancelled. current time:', this._player.currentTime, this._player.nuid);
     },
     reverse: function() {
       this._player.reverse();
@@ -153,8 +146,6 @@
       this._player.removeEventListener(type, (handler && handler._wrapper) || handler);
     },
     _removePlayers: function() {
-      // console.log('number of children: ' + this._childPlayers.length);
-      // console.log('remove players from', this);
       while (this._childPlayers.length)
         this._childPlayers.pop().cancel();
     },

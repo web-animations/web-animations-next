@@ -100,9 +100,7 @@
     },
   });
 
-  var assert = false;
   function tick(t) {
-    assert = true;
     hasRestartedThisFrame = false;
     var timeline = scope.timeline;
     timeline.currentTime = t;
