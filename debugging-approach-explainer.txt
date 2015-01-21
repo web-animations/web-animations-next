@@ -1,0 +1,42 @@
+We were testing for a difference between the native AnimationPlayer API and polyfill AnimationPlayer API, which was causing a problem with polyfill groups.
+
+First we wanted to see if we could reproduce the problem using just native implementation methods. We added console.logs to all of the relevant polyfill API methods so that they printed essentially their own calling code.
+
+E.g. (in player.js):
+
+    get currentTime() {
+      var ct = function() {
+        if (this._idle || this._currentTimePending)
+          return null;
+        return this._currentTime;
+      }.bind(this)();
+      console.log('console.log(p' + this.uid + '.currentTime + " | ' + ct + '");');
+      return ct;
+    },
+    set currentTime(newTime) {
+      console.log('p' + this.uid + '.currentTime = ' + newTime + ';');
+      newTime = +newTime;
+      if (isNaN(newTime))
+        return;
+      scope.restart();
+      if (!this.paused && this._startTime != null) {
+        this._startTime = this._timeline.currentTime - newTime / this._playbackRate;
+      }
+      this._currentTimePending = false;
+      if (this._currentTime == newTime)
+        return;
+      this._tickCurrentTime(newTime, true);
+      scope.invalidateEffects();
+    },
+
+We ran our buggy script, pause-group.html, with the print-instrumented polyfill (forcing the group to use polyfill AnimationPlayers by importing web-animations-next.dev.js) and saved the logged AnimationPlayer method calls in pf-player-api-calls-list.html. Then we ran pf-player-api-calls-list.html and see if it exhibited the bug.
+
+Note the console.log outputs in the accessor methods were set up to themselves do some logging, so that the simulation would print its own values for accessed parameters along with the expected values (i.e. the values in the group-driven version).
+
+The bug did not show up in this simulated version, nor did any discrepancies between getter values, suggesting that it was a bug in the polyfill and not in the native implementation.
+
+
+
+Next we wanted to record exactly which AnimationPlayer methods were being called in the native-backed version of the polyfill, to see if they matched what was being called in the pure polyfill version (i.e. what we captured in pf-player-api-calls-list.html). We added patch-player.js to wrap the native AnimationPlayer methods so they print logs similar to the ones in the player.js interface methods. (Note: in this phase it wasn’t so important that the ogs could be copied out and executed as we just wanted to see what was being called - but I set them up to match the calling code anyway). We ran the buggy example again, this time allowing the polyfill to use the (wrapped) native players, and saved the console output in native-player-api-calls-list.html.
+
+The player method calls in native-player-api-calls-list.html showed up some very weird behavior, which allowed us to work out what was causing the bug. Yay!
