@@ -71,7 +71,6 @@
     updating.filter(function(callback) {
       // console.log('TICK FILTER');
       // if(!document.timeline.currentTime || document.timeline.currentTime < 3000) console.log('CALLBACK PLAYER CURRENT TIME:', callback._player.currentTime, callback._player._player.nuid);
-      if (callback._player.playState == 'pending') return false;
       callback();
       if (!callback._player || callback._player.finished || callback._player.paused)
         callback._registered = false;
