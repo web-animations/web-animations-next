@@ -55,8 +55,6 @@
     var underlyingPlayer;
     var ticker = function(tf) {
       var player = underlyingPlayer._wrapper;
-      if (player.playState == 'pending') return;
-
       if (!player.source)
         return;
       if (tf == null) {
