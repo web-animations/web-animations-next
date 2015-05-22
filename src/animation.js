@@ -44,6 +44,8 @@
     this._inEffect = this._effect._update(0);
     this._idle = true;
     this._currentTimePending = false;
+    this._readyPromise;
+    this._finishedPromise;
   };
 
   scope.Animation.prototype = {
@@ -64,7 +66,7 @@
     _tickCurrentTime: function(newTime, ignoreLimit) {
       if (newTime != this._currentTime) {
         this._currentTime = newTime;
-        if (this.finished && !ignoreLimit)
+        if (this._isFinished && !ignoreLimit)
           this._currentTime = this._playbackRate > 0 ? this._totalDuration : 0;
         this._ensureAlive();
       }
@@ -118,7 +120,7 @@
         this.currentTime = oldCurrentTime;
       }
     },
-    get finished() {
+    get _isFinished() {
       return !this._idle && (this._playbackRate > 0 && this._currentTime >= this._totalDuration ||
           this._playbackRate < 0 && this._currentTime <= 0);
     },
@@ -130,13 +132,39 @@
         return 'pending';
       if (this._paused)
         return 'paused';
-      if (this.finished)
+      if (this._isFinished)
         return 'finished';
       return 'running';
     },
+    get finished() {
+      if (!this._finishedPromise) {
+        this._finishedPromise = new Promise(
+          function(resolve, reject) {
+            this.resolveFinished = resolve;
+            this.rejectFinished = reject;
+          }.bind(this));
+        if (this.playState == 'finished') {
+          this.resolveFinished();
+        }
+      }
+      return this._finishedPromise;
+    },
+    get ready() {
+      if (!this._readyPromise) {
+        this._readyPromise = new Promise(
+          function(resolve, reject) {
+            this.resolveReady = resolve;
+            this.rejectReady = reject;
+          }.bind(this));
+        if (this.playState !== 'pending') {
+          this.resolveReady();
+        }
+      }
+      return this._readyPromise;
+    },
     play: function() {
       this._paused = false;
-      if (this.finished || this._idle) {
+      if (this._isFinished || this._idle) {
         this._currentTime = this._playbackRate > 0 ? 0 : this._totalDuration;
         this._startTime = null;
         scope.invalidateEffects();
@@ -147,7 +175,7 @@
       this._ensureAlive();
     },
     pause: function() {
-      if (!this.finished && !this._paused && !this._idle) {
+      if (!this._isFinished && !this._paused && !this._idle) {
         this._currentTimePending = true;
       }
       this._startTime = null;
@@ -182,7 +210,7 @@
         this._finishHandlers.splice(index, 1);
     },
     _fireEvents: function(baseTime) {
-      var finished = this.finished;
+      var finished = this._isFinished;
       if ((finished || this._idle) && !this._finishedFlag) {
         var event = new AnimationEvent(this, this._currentTime, baseTime);
         var handlers = this._finishHandlers.concat(this.onfinish ? [this.onfinish] : []);
@@ -198,7 +226,7 @@
       if (!this._idle && !this._paused) {
         if (this._startTime == null)
           this.startTime = timelineTime - this._currentTime / this.playbackRate;
-        else if (!this.finished)
+        else if (!this._isFinished)
           this._tickCurrentTime((timelineTime - this._startTime) * this.playbackRate);
       }
 
