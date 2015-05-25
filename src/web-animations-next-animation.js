@@ -174,8 +174,14 @@
         this.currentTime = oldCurrentTime;
       }
     },
+    get _isFinished() {
+      return this._animation._isFinished;
+    },
     get finished() {
       return this._animation.finished;
+    },
+    get ready() {
+      return this._animation.ready;
     },
     get source() {
       shared.deprecated('Animation.source', '2015-03-23', 'Use Animation.effect instead.');

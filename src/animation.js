@@ -51,7 +51,9 @@
   scope.Animation.prototype = {
     _playStateUpdate: function(oldPlayState) {
       var newPlayState = this.playState;
+      // console.log(oldPlayState, newPlayState, this.currentTime, this.startTime);
       if (this._readyPromise && newPlayState !== oldPlayState) {
+        // console.log(oldPlayState, newPlayState, this.currentTime);
         if (newPlayState == 'idle') {
           if (this._readyPromiseState == 'pending') {
             // FIXME: Should this raise some kind of error?
@@ -66,6 +68,7 @@
         }
       }
       if (this._finishedPromise && newPlayState !== oldPlayState) {
+        // console.log(oldPlayState, newPlayState, this.currentTime);
         if (newPlayState == 'idle') {
           if (this._finishedPromiseState == 'pending') {
             this._rejectFinishedPromise();
