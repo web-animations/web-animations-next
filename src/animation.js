@@ -180,11 +180,11 @@
             this._resolveFinishedPromise = function() {
               this._finishedPromiseState = 'resolved';
               resolve();
-            }
+            };
             this._rejectFinishedPromise = function() {
               this._finishedPromiseState = 'rejected';
               reject({type: DOMException.ABORT_ERR, name: 'AbortError'});
-            }
+            };
           }.bind(this));
     },
     get finished() {
@@ -207,7 +207,7 @@
             this._rejectReadyPromise = function() {
               this._readyPromiseState = 'rejected';
               reject({type: DOMException.ABORT_ERR, name: 'AbortError'});
-            }
+            };
           }.bind(this));
     },
     get ready() {
