@@ -56,7 +56,6 @@
         // console.log(oldPlayState, newPlayState, this.currentTime);
         if (newPlayState == 'idle') {
           if (this._readyPromiseState == 'pending') {
-            // FIXME: Should this raise some kind of error?
             this._rejectReadyPromise();
           }
           this._resetReadyPromise();
@@ -178,15 +177,13 @@
       this._finishedPromise = new Promise(
           function(resolve, reject) {
             this._finishedPromiseState = 'pending';
-
             this._resolveFinishedPromise = function() {
               this._finishedPromiseState = 'resolved';
               resolve();
             }
-
             this._rejectFinishedPromise = function() {
               this._finishedPromiseState = 'rejected';
-              reject();
+              reject({type: DOMException.ABORT_ERR, name: 'AbortError'});
             }
           }.bind(this));
     },
@@ -203,15 +200,13 @@
       this._readyPromise = new Promise(
           function(resolve, reject) {
             this._readyPromiseState = 'pending';
-
             this._resolveReadyPromise = function() {
               this._readyPromiseState = 'resolved';
               resolve();
             };
-
             this._rejectReadyPromise = function() {
               this._readyPromiseState = 'rejected';
-              reject();
+              reject({type: DOMException.ABORT_ERR, name: 'AbortError'});
             }
           }.bind(this));
     },
