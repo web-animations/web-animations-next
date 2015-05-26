@@ -44,42 +44,9 @@
     this._inEffect = this._effect._update(0);
     this._idle = true;
     this._currentTimePending = false;
-    this._readyPromise;
-    this._finishedPromise;
   };
 
   scope.Animation.prototype = {
-    _playStateUpdate: function(oldPlayState) {
-      var newPlayState = this.playState;
-      // console.log(oldPlayState, newPlayState, this.currentTime, this.startTime);
-      if (this._readyPromise && newPlayState !== oldPlayState) {
-        // console.log(oldPlayState, newPlayState, this.currentTime);
-        if (newPlayState == 'idle') {
-          if (this._readyPromiseState == 'pending') {
-            this._rejectReadyPromise();
-          }
-          this._resetReadyPromise();
-          this._resolveReadyPromise();
-        } else if (oldPlayState == 'pending') {
-          this._resolveReadyPromise();
-        } else if (newPlayState == 'pending') {
-          this._resetReadyPromise();
-        }
-      }
-      if (this._finishedPromise && newPlayState !== oldPlayState) {
-        // console.log(oldPlayState, newPlayState, this.currentTime);
-        if (newPlayState == 'idle') {
-          if (this._finishedPromiseState == 'pending') {
-            this._rejectFinishedPromise();
-          }
-          this._resetFinishedPromise();
-        } else if (newPlayState == 'finished') {
-          this._resolveFinishedPromise();
-        } else if (oldPlayState == 'finished') {
-          this._resetFinishedPromise();
-        }
-      }
-    },
     _ensureAlive: function() {
       // If an animation is playing backwards and is not fill backwards/both
       // then it should go out of effect when it reaches the start of its
@@ -95,14 +62,12 @@
       }
     },
     _tickCurrentTime: function(newTime, ignoreLimit) {
-      var oldPlayState = this.playState;
       if (newTime != this._currentTime) {
         this._currentTime = newTime;
         if (this._isFinished && !ignoreLimit)
           this._currentTime = this._playbackRate > 0 ? this._totalDuration : 0;
         this._ensureAlive();
       }
-      this._playStateUpdate(oldPlayState);
     },
     get currentTime() {
       if (this._idle || this._currentTimePending)
@@ -110,7 +75,6 @@
       return this._currentTime;
     },
     set currentTime(newTime) {
-      var oldPlayState = this.playState;
       newTime = +newTime;
       if (isNaN(newTime))
         return;
@@ -123,13 +87,11 @@
         return;
       this._tickCurrentTime(newTime, true);
       scope.invalidateEffects();
-      this._playStateUpdate(oldPlayState);
     },
     get startTime() {
       return this._startTime;
     },
     set startTime(newTime) {
-      var oldPlayState = this.playState;
       newTime = +newTime;
       if (isNaN(newTime))
         return;
@@ -138,7 +100,6 @@
       this._startTime = newTime;
       this._tickCurrentTime((this._timeline.currentTime - this._startTime) * this.playbackRate);
       scope.invalidateEffects();
-      this._playStateUpdate(oldPlayState);
     },
     get playbackRate() {
       return this._playbackRate;
@@ -173,55 +134,7 @@
         return 'finished';
       return 'running';
     },
-    _resetFinishedPromise: function() {
-      this._finishedPromise = new Promise(
-          function(resolve, reject) {
-            this._finishedPromiseState = 'pending';
-            this._resolveFinishedPromise = function() {
-              this._finishedPromiseState = 'resolved';
-              resolve();
-            };
-            this._rejectFinishedPromise = function() {
-              this._finishedPromiseState = 'rejected';
-              reject({type: DOMException.ABORT_ERR, name: 'AbortError'});
-            };
-          }.bind(this));
-    },
-    get finished() {
-      if (!this._finishedPromise) {
-        this._resetFinishedPromise();
-        if (this.playState == 'finished') {
-          this._resolveFinishedPromise();
-        }
-      }
-      return this._finishedPromise;
-    },
-    _resetReadyPromise: function() {
-      this._readyPromise = new Promise(
-          function(resolve, reject) {
-            this._readyPromiseState = 'pending';
-            this._resolveReadyPromise = function() {
-              this._readyPromiseState = 'resolved';
-              resolve();
-            };
-            this._rejectReadyPromise = function() {
-              this._readyPromiseState = 'rejected';
-              reject({type: DOMException.ABORT_ERR, name: 'AbortError'});
-            };
-          }.bind(this));
-    },
-    get ready() {
-      if (!this._readyPromise) {
-        this._resetReadyPromise();
-        if (this.playState !== 'pending') {
-          this._resolveReadyPromise();
-          console.log(this._readyPromise, this._readyPromiseState);
-        }
-      }
-      return this._readyPromise;
-    },
     play: function() {
-      var oldPlayState = this.playState;
       this._paused = false;
       if (this._isFinished || this._idle) {
         this._currentTime = this._playbackRate > 0 ? 0 : this._totalDuration;
@@ -232,7 +145,6 @@
       scope.restart();
       this._idle = false;
       this._ensureAlive();
-      this._playStateUpdate(oldPlayState);
     },
     pause: function() {
       if (!this._isFinished && !this._paused && !this._idle) {
@@ -283,7 +195,6 @@
       this._finishedFlag = finished;
     },
     _tick: function(timelineTime) {
-      var oldPlayState = this.playState;
       if (!this._idle && !this._paused) {
         if (this._startTime == null)
           this.startTime = timelineTime - this._currentTime / this.playbackRate;
@@ -294,7 +205,6 @@
       this._currentTimePending = false;
       this._fireEvents(timelineTime);
       return !this._idle && (this._inEffect || !this._finishedFlag);
-      this._playStateUpdate();
     },
   };
 

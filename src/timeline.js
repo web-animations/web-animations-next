@@ -32,6 +32,12 @@
       shared.deprecated('AnimationTimeline.getAnimationPlayers', '2015-03-23', 'Use AnimationTimeline.getAnimations instead.');
       return this.getAnimations();
     },
+    _updateAnimationsPromises: function() {
+      for (var i = 0; i < this._animations.length; i++) {
+        this._animations[i]._updatePromises();
+        // this._animations[i]._updateOldPlayState();
+      }
+    },
     _discardAnimations: function() {
       this._animations = this._animations.filter(function(animation) {
         return animation.playState != 'finished' && animation.playState != 'idle';
@@ -47,6 +53,8 @@
       // effect's children, and Animation.play is also recursive. We only need to call play on each
       // animation in the tree once.
       animation._animation.play();
+      animation._updateOldPlayState();
+      // animation._updatePromises();
       return animation;
     },
   };
@@ -63,6 +71,7 @@
   function webAnimationsNextTick(t) {
     var timeline = window.document.timeline;
     timeline.currentTime = t;
+    timeline._updateAnimationsPromises();
     timeline._discardAnimations();
     if (timeline._animations.length == 0)
       ticking = false;

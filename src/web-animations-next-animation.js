@@ -29,10 +29,54 @@
     this._rebuildUnderlyingAnimation();
     // Animations are constructed in the idle state.
     this._animation.cancel();
+    this._readyPromise;
+    this._finishedPromise;
+    this._oldPlayState = 'idle';
+    this._updateOldPlayState();
   };
 
   // TODO: add an effect getter/setter
   scope.Animation.prototype = {
+    _updateOldPlayState: function() {
+      if (this._oldPlayState !== this.playState) {
+        this._oldPlayState = this.playState;
+      }
+    },
+    _updatePromises: function() {
+      var oldPlayState = this._oldPlayState;
+      var newPlayState = this.playState;
+      if (this._readyPromise || this._finishedPromise)
+        console.log(this._sequenceNumber, oldPlayState, newPlayState, this.currentTime, this.startTime);
+      if (this._readyPromise && newPlayState !== oldPlayState) {
+        // console.log(this._sequenceNumber, oldPlayState, newPlayState, this.currentTime);
+        if (newPlayState == 'idle') {
+          if (this._readyPromiseState == 'pending') {
+            this._rejectReadyPromise();
+          }
+          this._resetReadyPromise();
+          this._resolveReadyPromise();
+        } else if (oldPlayState == 'pending') {
+          this._resolveReadyPromise();
+        } else if (newPlayState == 'pending') {
+          this._resetReadyPromise();
+        }
+      }
+      if (this._finishedPromise && newPlayState !== oldPlayState) {
+        // console.log(this._sequenceNumber, oldPlayState, newPlayState, this.currentTime);
+        if (newPlayState == 'idle') {
+          if (this._finishedPromiseState == 'pending') {
+            this._rejectFinishedPromise();
+          }
+          this._resetFinishedPromise();
+        } else if (newPlayState == 'finished') {
+          this._resolveFinishedPromise();
+        } else if (oldPlayState == 'finished') {
+          this._resetFinishedPromise();
+        }
+      }
+      // FIXME: Not sure about this.
+      this._updateOldPlayState();
+    },
     _rebuildUnderlyingAnimation: function() {
       var oldPlaybackRate;
       var oldPaused;
@@ -122,6 +166,53 @@
     get playState() {
       return this._animation.playState;
     },
+    _resetFinishedPromise: function() {
+      this._finishedPromise = new Promise(
+          function(resolve, reject) {
+            this._finishedPromiseState = 'pending';
+            this._resolveFinishedPromise = function() {
+              this._finishedPromiseState = 'resolved';
+              resolve();
+            };
+            this._rejectFinishedPromise = function() {
+              this._finishedPromiseState = 'rejected';
+              reject({type: DOMException.ABORT_ERR, name: 'AbortError'});
+            };
+          }.bind(this));
+    },
+    get finished() {
+      if (!this._finishedPromise) {
+        this._resetFinishedPromise();
+        if (this.playState == 'finished') {
+          this._resolveFinishedPromise();
+        }
+      }
+      return this._finishedPromise;
+    },
+    _resetReadyPromise: function() {
+      this._readyPromise = new Promise(
+          function(resolve, reject) {
+            this._readyPromiseState = 'pending';
+            this._resolveReadyPromise = function() {
+              this._readyPromiseState = 'resolved';
+              resolve();
+            };
+            this._rejectReadyPromise = function() {
+              this._readyPromiseState = 'rejected';
+              reject({type: DOMException.ABORT_ERR, name: 'AbortError'});
+            };
+          }.bind(this));
+    },
+    get ready() {
+      if (!this._readyPromise) {
+        this._resetReadyPromise();
+        if (this.playState !== 'pending') {
+          this._resolveReadyPromise();
+          console.log(this._readyPromise, this._readyPromiseState);
+        }
+      }
+      return this._readyPromise;
+    },
     get onfinish() {
       return this._onfinish;
     },
@@ -141,21 +232,25 @@
       return this._animation.currentTime;
     },
     set currentTime(v) {
+      this._updateOldPlayState();
       this._animation.currentTime = isFinite(v) ? v : Math.sign(v) * Number.MAX_VALUE;
       this._register();
       this._forEachChild(function(child, offset) {
         child.currentTime = v - offset;
       });
+      // this._updatePromises();
     },
     get startTime() {
       return this._animation.startTime;
     },
     set startTime(v) {
+      this._updateOldPlayState();
       this._animation.startTime = isFinite(v) ? v : Math.sign(v) * Number.MAX_VALUE;
       this._register();
       this._forEachChild(function(child, offset) {
         child.startTime = v + offset;
       });
+      // this._updatePromises();
     },
     get playbackRate() {
       return this._animation.playbackRate;
@@ -177,17 +272,12 @@
     get _isFinished() {
       return this._animation._isFinished;
     },
-    get finished() {
-      return this._animation.finished;
-    },
-    get ready() {
-      return this._animation.ready;
-    },
     get source() {
       shared.deprecated('Animation.source', '2015-03-23', 'Use Animation.effect instead.');
       return this.effect;
     },
     play: function() {
+      this._updateOldPlayState();
       this._paused = false;
       this._animation.play();
       this._register();
@@ -197,6 +287,7 @@
         child.play();
         child.currentTime = time;
       });
+      // this._updatePromises();
     },
     pause: function() {
       if (this.currentTime) {
