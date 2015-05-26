@@ -75,7 +75,7 @@
         }
       }
       // FIXME: Not sure about this.
-      this._updateOldPlayState();
+      // this._updateOldPlayState();
     },
     _rebuildUnderlyingAnimation: function() {
       var oldPlaybackRate;
@@ -238,7 +238,7 @@
       this._forEachChild(function(child, offset) {
         child.currentTime = v - offset;
       });
-      // this._updatePromises();
+      this._updatePromises();
     },
     get startTime() {
       return this._animation.startTime;
@@ -250,7 +250,7 @@
       this._forEachChild(function(child, offset) {
         child.startTime = v + offset;
       });
-      // this._updatePromises();
+      this._updatePromises();
     },
     get playbackRate() {
       return this._animation.playbackRate;
@@ -287,7 +287,7 @@
         child.play();
         child.currentTime = time;
       });
-      // this._updatePromises();
+      this._updatePromises();
     },
     pause: function() {
       if (this.currentTime) {

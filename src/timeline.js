@@ -35,7 +35,7 @@
     _updateAnimationsPromises: function() {
       for (var i = 0; i < this._animations.length; i++) {
         this._animations[i]._updatePromises();
-        // this._animations[i]._updateOldPlayState();
+        this._animations[i]._updateOldPlayState();
       }
     },
     _discardAnimations: function() {
@@ -54,7 +54,7 @@
       // animation in the tree once.
       animation._animation.play();
       animation._updateOldPlayState();
-      // animation._updatePromises();
+      animation._updatePromises();
       return animation;
     },
   };
