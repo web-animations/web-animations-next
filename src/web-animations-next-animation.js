@@ -45,8 +45,8 @@
     _updatePromises: function() {
       var oldPlayState = this._oldPlayState;
       var newPlayState = this.playState;
-      if (this._readyPromise || this._finishedPromise)
-        console.log(this._sequenceNumber, oldPlayState, newPlayState, this.currentTime, this.startTime);
+      // if (this._readyPromise || this._finishedPromise)
+      //   console.log(this._sequenceNumber, oldPlayState, newPlayState, this.currentTime, this.startTime);
       if (this._readyPromise && newPlayState !== oldPlayState) {
         // console.log(this._sequenceNumber, oldPlayState, newPlayState, this.currentTime);
         if (newPlayState == 'idle') {
@@ -75,7 +75,7 @@
         }
       }
       // FIXME: Not sure about this.
-      // this._updateOldPlayState();
+      this._updateOldPlayState();
     },
     _rebuildUnderlyingAnimation: function() {
       var oldPlaybackRate;
