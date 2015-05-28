@@ -177,7 +177,7 @@
       }
     },
     get playState() {
-      return this._animation.playState;
+      return this._animation ? this._animation.playState : 'idle';
     },
     _resetFinishedPromise: function() {
       this._finishedPromise = new Promise(
