@@ -116,9 +116,11 @@
     configurable: true,
     enumerable: true,
     value: function() {
+      window.document.timeline._updateAnimationsStoredPlayStates();
       var result = originalGetComputedStyle.apply(this, arguments);
       if (updatePendingGroups())
         result = originalGetComputedStyle.apply(this, arguments);
+      window.document.timeline._updateAnimationsPromises();
       return result;
     },
   });

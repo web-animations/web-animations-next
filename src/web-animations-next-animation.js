@@ -41,6 +41,9 @@
   // TODO: add an effect getter/setter
   scope.Animation.prototype = {
     _updateOldPlayState: function() {
+      // Might want to do something like (if we have already called
+      // updateOldPlayState since the last promise update, do a promise update
+      // first)
       if (this._oldPlayState !== this.playState) {
         this._oldPlayState = this.playState;
       }
@@ -177,9 +180,12 @@
       }
     },
     get playState() {
+      // Can change back to `return this._animation.playState` if we decide
+      // not to check promises in rebildUnderlyingAnimation.
       return this._animation ? this._animation.playState : 'idle';
     },
     _resetFinishedPromise: function() {
+      // console.log('RESET FINISHED');
       this._finishedPromise = new Promise(
           function(resolve, reject) {
             this._finishedPromiseState = 'pending';
@@ -203,6 +209,7 @@
       return this._finishedPromise;
     },
     _resetReadyPromise: function() {
+      // console.log('RESET READY');
       this._readyPromise = new Promise(
           function(resolve, reject) {
             this._readyPromiseState = 'pending';
