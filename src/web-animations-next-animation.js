@@ -33,6 +33,9 @@
     this._finishedPromise;
     this._oldPlayState = 'idle';
     this._updateOldPlayState();
+    // TODO: initialize ready and finished promises?
+    // this._resetReadyPromise();
+    // this._resolveReadyPromise();
   };
 
   // TODO: add an effect getter/setter
@@ -50,9 +53,13 @@
       if (this._readyPromise && newPlayState !== oldPlayState) {
         // console.log(this._sequenceNumber, oldPlayState, newPlayState, this.currentTime);
         if (newPlayState == 'idle') {
+          // If the animation play state changes from not-idle to idle before
+          // the current ready promise resolves, reject the current ready
+          // promise.
           if (this._readyPromiseState == 'pending') {
             this._rejectReadyPromise();
           }
+          // Make the current ready promise a new, resolved promise.
           this._resetReadyPromise();
           this._resolveReadyPromise();
         } else if (oldPlayState == 'pending') {
@@ -64,9 +71,13 @@
       if (this._finishedPromise && newPlayState !== oldPlayState) {
         // console.log(this._sequenceNumber, oldPlayState, newPlayState, this.currentTime);
         if (newPlayState == 'idle') {
+          // If the animation play state changes from not-idle to idle before
+          // the current finished promise resolves, reject the current
+          // finished promise.
           if (this._finishedPromiseState == 'pending') {
             this._rejectFinishedPromise();
           }
+          // Make the current finished promise a new, pending promise.
           this._resetFinishedPromise();
         } else if (newPlayState == 'finished') {
           this._resolveFinishedPromise();
@@ -74,10 +85,10 @@
           this._resetFinishedPromise();
         }
       }
-      // FIXME: Not sure about this.
       this._updateOldPlayState();
     },
     _rebuildUnderlyingAnimation: function() {
+      this._updateOldPlayState();
       var oldPlaybackRate;
       var oldPaused;
       var oldStartTime;
@@ -116,6 +127,9 @@
           this.pause();
         }
       }
+      // FIXME: Not sure if we should do this here, as this whole method is
+      // just an implementation tool.
+      this._updatePromises();
     },
     _updateChildren: function() {
       if (!this.effect || this.playState == 'idle')
@@ -158,7 +172,6 @@
     _arrangeChildren: function(childAnimation, offset) {
       if (this.startTime === null) {
         childAnimation.currentTime = this.currentTime - offset / this.playbackRate;
-        childAnimation._startTime = null;
       } else if (childAnimation.startTime !== this.startTime + offset / this.playbackRate) {
         childAnimation.startTime = this.startTime + offset / this.playbackRate;
       }
@@ -172,7 +185,7 @@
             this._finishedPromiseState = 'pending';
             this._resolveFinishedPromise = function() {
               this._finishedPromiseState = 'resolved';
-              resolve();
+              resolve(this);
             };
             this._rejectFinishedPromise = function() {
               this._finishedPromiseState = 'rejected';
@@ -195,7 +208,7 @@
             this._readyPromiseState = 'pending';
             this._resolveReadyPromise = function() {
               this._readyPromiseState = 'resolved';
-              resolve();
+              resolve(this);
             };
             this._rejectReadyPromise = function() {
               this._readyPromiseState = 'rejected';
@@ -208,7 +221,6 @@
         this._resetReadyPromise();
         if (this.playState !== 'pending') {
           this._resolveReadyPromise();
-          console.log(this._readyPromise, this._readyPromiseState);
         }
       }
       return this._readyPromise;
@@ -256,6 +268,7 @@
       return this._animation.playbackRate;
     },
     set playbackRate(value) {
+      this._updateOldPlayState();
       var oldCurrentTime = this.currentTime;
       this._animation.playbackRate = value;
       this._forEachChild(function(childAnimation) {
@@ -268,6 +281,7 @@
       if (oldCurrentTime !== null) {
         this.currentTime = oldCurrentTime;
       }
+      this._updatePromises();
     },
     get _isFinished() {
       return this._animation._isFinished;
@@ -290,6 +304,7 @@
       this._updatePromises();
     },
     pause: function() {
+      this._updateOldPlayState();
       if (this.currentTime) {
         this._holdTime = this.currentTime;
       }
@@ -299,18 +314,24 @@
         child.pause();
       });
       this._paused = true;
+      this._updatePromises();
     },
     finish: function() {
+      this._updateOldPlayState();
       this._animation.finish();
       this._register();
       // TODO: child animations??
+      this._updatePromises();
     },
     cancel: function() {
+      this._updateOldPlayState();
       this._animation.cancel();
       this._register();
       this._removeChildAnimations();
+      this._updatePromises();
     },
     reverse: function() {
+      this._updateOldPlayState();
       var oldCurrentTime = this.currentTime;
       this._animation.reverse();
       this._forEachChild(function(childAnimation) {
@@ -319,6 +340,7 @@
       if (oldCurrentTime !== null) {
         this.currentTime = oldCurrentTime;
       }
+      this._updatePromises();
     },
     addEventListener: function(type, handler) {
       var wrapped = handler;
