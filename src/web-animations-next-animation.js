@@ -33,6 +33,7 @@
     this._finishedPromise;
     this._oldPlayState = 'idle';
     this._updateOldPlayState();
+    this.name = 'OUTER';
     // TODO: initialize ready and finished promises?
     // this._resetReadyPromise();
     // this._resolveReadyPromise();
@@ -45,6 +46,8 @@
       // updateOldPlayState since the last promise update, do a promise update
       // first)
       if (this._oldPlayState !== this.playState) {
+        if (this._readyPromise)
+          console.log(this._oldPlayState, this.playState, this._updateOldPlayState.caller);
         this._oldPlayState = this.playState;
       }
     },
@@ -52,9 +55,9 @@
       var oldPlayState = this._oldPlayState;
       var newPlayState = this.playState;
       // if (this._readyPromise || this._finishedPromise)
-      //   console.log(this._sequenceNumber, oldPlayState, newPlayState, this.currentTime, this.startTime);
+      // console.log(this._sequenceNumber, oldPlayState, newPlayState);
       if (this._readyPromise && newPlayState !== oldPlayState) {
-        // console.log(this._sequenceNumber, oldPlayState, newPlayState, this.currentTime);
+        console.log('UPDATE READY', oldPlayState, newPlayState, this._updatePromises.caller);
         if (newPlayState == 'idle') {
           // If the animation play state changes from not-idle to idle before
           // the current ready promise resolves, reject the current ready
@@ -72,7 +75,7 @@
         }
       }
       if (this._finishedPromise && newPlayState !== oldPlayState) {
-        // console.log(this._sequenceNumber, oldPlayState, newPlayState, this.currentTime);
+        console.log('UPDATE FINISHED', oldPlayState, newPlayState, this._updatePromises.caller);
         if (newPlayState == 'idle') {
           // If the animation play state changes from not-idle to idle before
           // the current finished promise resolves, reject the current
@@ -185,7 +188,6 @@
       return this._animation ? this._animation.playState : 'idle';
     },
     _resetFinishedPromise: function() {
-      // console.log('RESET FINISHED');
       this._finishedPromise = new Promise(
           function(resolve, reject) {
             this._finishedPromiseState = 'pending';
@@ -209,7 +211,6 @@
       return this._finishedPromise;
     },
     _resetReadyPromise: function() {
-      // console.log('RESET READY');
       this._readyPromise = new Promise(
           function(resolve, reject) {
             this._readyPromiseState = 'pending';
@@ -248,7 +249,10 @@
       }
     },
     get currentTime() {
-      return this._animation.currentTime;
+      this._updateOldPlayState();
+      var currentTime = this._animation.currentTime;
+      this._updatePromises();
+      return currentTime;
     },
     set currentTime(v) {
       this._updateOldPlayState();
@@ -289,9 +293,6 @@
         this.currentTime = oldCurrentTime;
       }
       this._updatePromises();
-    },
-    get _isFinished() {
-      return this._animation._isFinished;
     },
     get source() {
       shared.deprecated('Animation.source', '2015-03-23', 'Use Animation.effect instead.');
@@ -377,10 +378,10 @@
           offset += child.effect.activeDuration;
       }.bind(this));
 
-      if (this._animation.playState == 'pending')
+      if (this.playState == 'pending')
         return;
       var timing = this.effect._timing;
-      var t = this._animation.currentTime;
+      var t = this.currentTime;
       if (t !== null)
         t = shared.calculateTimeFraction(shared.calculateActiveDuration(timing), t, timing);
       if (t == null || isNaN(t))
