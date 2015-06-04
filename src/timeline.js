@@ -32,7 +32,20 @@
       shared.deprecated('AnimationTimeline.getAnimationPlayers', '2015-03-23', 'Use AnimationTimeline.getAnimations instead.');
       return this.getAnimations();
     },
+    _updateAnimationsStoredPlayStates: function() {
+      for (var i = 0; i < this._animations.length; i++) {
+        this._animations[i]._updateOldPlayState();
+      }
+    },
+    _updateAnimationsPromises: function() {
+      for (var i = 0; i < this._animations.length; i++) {
+        this._animations[i]._updatePromises();
+      }
+    },
     _discardAnimations: function() {
+      // FIXME: Do we need to call this here?
+      this._updateAnimationsPromises();
+      this._updateAnimationsStoredPlayStates();
       this._animations = this._animations.filter(function(animation) {
         return animation.playState != 'finished' && animation.playState != 'idle';
       });
@@ -46,7 +59,9 @@
       // Timeline.play calls new scope.Animation(effect) which (indirectly) calls Timeline.play on
       // effect's children, and Animation.play is also recursive. We only need to call play on each
       // animation in the tree once.
+      animation._updateOldPlayState();
       animation._animation.play();
+      animation._updatePromises();
       return animation;
     },
     play: function(effect) {
@@ -69,6 +84,8 @@
   function webAnimationsNextTick(t) {
     var timeline = window.document.timeline;
     timeline.currentTime = t;
+    timeline._updateAnimationsPromises();
+    timeline._updateAnimationsStoredPlayStates();
     timeline._discardAnimations();
     if (timeline._animations.length == 0)
       ticking = false;
