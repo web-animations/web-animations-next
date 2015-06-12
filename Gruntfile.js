@@ -40,9 +40,29 @@ module.exports = function(grunt) {
         wrap: false,
         compress: {
           global_defs: defines,
-          dead_code: false
+          sequences: false,
+          properties: false,
+          dead_code: false,
+          conditionals: false,
+          comparisons: false,
+          evaluate: false,
+          booleans: false,
+          loops: false,
+          unused: false,
+          hoist_funs: false,
+          hoist_vars: false,
+          if_return: false,
+          join_vars: false,
+          cascade: false,
+          negate_iife: false,
+          side_effects: false
         },
-        mangle: false
+        mangle: false,
+        beautify: {
+          beautify: true,
+          indent_level: 2,
+          bracketize: true
+        }
       },
       nonull: true,
       dest: target,
@@ -120,8 +140,8 @@ module.exports = function(grunt) {
     var config = targetConfig[target];
     return genTarget(target).concat([
       concat(config.scopeSrc.concat(config.sharedSrc).concat(config.webAnimations1Src), 'inter-raw-' + target + '.js', concatDefines),
-      guard('inter-raw-' + target + '.js', 'inter-' + target + '.js'),
-      compress('inter-' + target + '.js', target + '.min.js', concatDefines)
+      guard('inter-raw-' + target + '.js', target + '.js'),
+      compress(target + '.js', target + '.min.js', concatDefines)
     ]);
   }
 
@@ -133,8 +153,8 @@ module.exports = function(grunt) {
       guard('inter-component-' + target + 'web-animations-1.js', 'inter-guarded-' + target + '-web-animations-1.js'),
       concat(config.webAnimationsNextSrc, 'inter-component-' + target + '.js', concatDefines),
       concatWithMaps(['inter-' + target + '-preamble.js', 'inter-guarded-' + target + '-web-animations-1.js', 'inter-component-' + target + '.js'],
-          'inter-' + target + '.js'),
-      compress('inter-' + target + '.js', target + '.min.js', concatDefines)
+          target + '.js'),
+      compress(target + '.js', target + '.min.js', concatDefines)
     ]);
   }
 
