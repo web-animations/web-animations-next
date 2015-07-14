@@ -1,5 +1,5 @@
 'use strict';
-suite('animation-promises-tests', function() {
+suite('web-animations-next-animation', function() {
   test('Newly constructed animation has a resolved ready promise', function(done) {
     var readyResolved = false;
     var readyRejected = false;
@@ -314,5 +314,20 @@ suite('animation-promises-tests', function() {
         done(assertion);
       }
     }, 200);
+  });
+
+  test('Newly constructed animation is idle', function() {
+    var effect = new SequenceEffect([
+      new KeyframeEffect(document.body, [], 2000),
+      new GroupEffect([
+        new KeyframeEffect(document.body, [], 2000),
+        new KeyframeEffect(document.body, [], 1000)
+      ])
+    ]);
+    var animation = new Animation(effect, document.timeline);
+    (function isIdle(animation) {
+      assert.equal(animation.playState, 'idle');
+      animation._childAnimations.every(isIdle);
+    })(animation);
   });
 });
