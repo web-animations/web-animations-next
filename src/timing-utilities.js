@@ -304,8 +304,15 @@
     var activeTime = calculateActiveTime(activeDuration, timing.fill, localTime, phase, timing.delay);
     if (activeTime === null)
       return null;
-    if (activeDuration === 0)
-      return phase === PhaseBefore ? 0 : 1;
+    if (activeDuration === 0) {
+      switch (timing.direction) {
+        case 'normal':
+        case 'alternate':
+          return phase === PhaseBefore ? 0 : 1;
+        default:
+          return phase === PhaseBefore ? 1 : 0;
+      }
+    }
     var startOffset = timing.iterationStart * timing.duration;
     var scaledActiveTime = calculateScaledActiveTime(activeDuration, activeTime, startOffset, timing);
     var iterationTime = calculateIterationTime(timing.duration, repeatedDuration(timing), scaledActiveTime, startOffset, timing);

@@ -318,6 +318,21 @@ suite('keyframe-effect-constructor', function() {
     assert.closeTo(Number(getComputedStyle(target).opacity), 0.75, 0.001, 't=125');
   });
 
+  test('Setting direction on KeyframeEffect timing with zero duration', function() {
+    var target = document.createElement('div');
+    document.body.appendChild(target);
+    var effect = new KeyframeEffect(
+        target,
+        [
+          {opacity: 0},
+          {opacity: 1}
+        ],
+        {direction: 'reverse', fill: 'forwards'});
+    var animation = document.timeline.play(effect);
+    tick(0);
+    assert.equal(Number(getComputedStyle(target).opacity), 0);
+  });
+
   test('Setting easing on KeyframeEffect timing', function() {
     var target = document.createElement('div');
     document.body.appendChild(target);
