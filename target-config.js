@@ -42,6 +42,10 @@
       'src/property-names.js',
   ];
 
+  var webAnimations1BonusSrc = [
+      'src/bonus.js',
+  ];
+
   var liteWebAnimations1Src = [
       'src/keyframe-interpolations.js',
       'src/property-interpolation.js',
@@ -108,6 +112,7 @@
       scopeSrc: scopeSrc,
       sharedSrc: sharedSrc,
       webAnimations1Src: webAnimations1Src,
+      webAnimations1BonusSrc: webAnimations1BonusSrc,
       webAnimationsNextSrc: [],
       src: scopeSrc.concat(sharedSrc).concat(webAnimations1Src),
       test: webAnimations1Test,
@@ -116,16 +121,18 @@
       scopeSrc: scopeSrc,
       sharedSrc: sharedSrc,
       webAnimations1Src: webAnimations1Src,
+      webAnimations1BonusSrc: webAnimations1BonusSrc,
       webAnimationsNextSrc: webAnimationsNextSrc,
-      src: scopeSrc.concat(sharedSrc).concat(webAnimations1Src).concat(webAnimationsNextSrc),
+      src: scopeSrc.concat(sharedSrc).concat(webAnimations1Src).concat(webAnimations1BonusSrc).concat(webAnimationsNextSrc),
       test: webAnimationsNextTest,
     },
     'web-animations-next-lite': {
       scopeSrc: scopeSrc,
       sharedSrc: sharedSrc,
       webAnimations1Src: liteWebAnimations1Src,
+      webAnimations1BonusSrc: webAnimations1BonusSrc,
       webAnimationsNextSrc: webAnimationsNextSrc,
-      src: scopeSrc.concat(sharedSrc).concat(liteWebAnimations1Src).concat(webAnimationsNextSrc),
+      src: scopeSrc.concat(sharedSrc).concat(liteWebAnimations1Src).concat(webAnimations1BonusSrc).concat(webAnimationsNextSrc),
       test: [],
     },
   };
