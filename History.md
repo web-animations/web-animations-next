@@ -1,3 +1,6 @@
+### 2.1.5 - *April 19 2016*
+  * Fix native TypeError exception when using groups.
+
 ### 2.1.4 - *December 1 2015*
   * Use `Date.now()` instead of `performace.now()` for mobile Safari.
 
