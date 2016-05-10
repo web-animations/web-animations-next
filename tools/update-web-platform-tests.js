@@ -1,3 +1,17 @@
+'use strict';
+module.exports = function() {
+  return clear().
+    then(download).
+    then(unzip).
+    then(function(filePromises) {
+      return Promise.all(filePromises.map(function(filePromise) {
+        return filePromise.
+          then(alterResourcePaths).
+          then(writeFile);
+      }));
+    });
+};
+
 var directoryPath = 'test/web-platform-tests/web-animations';
 var zipURL = 'https://github.com/w3c/web-platform-tests/archive/master.zip';
 var zipDirectoryPath = 'web-platform-tests-master/web-animations';
@@ -17,23 +31,42 @@ function clear() {
 }
 
 function download() {
+  return downloadURL(zipURL);
+}
+
+function downloadURL(url) {
   return new Promise(function(resolve, reject) {
-    console.log('Downloading ' + zipURL + '...');
+    console.log('Downloading ' + url + '...');
     var https = require('https');
-    var request = https.get(zipURL);
-    request.on('error', function(error) {
-      console.log(error);
-      done(false);
-    });
+    var request = https.get(url);
+    request.on('error', reject);
     request.on('response', function(response) {
-      console.log('Status code: ' + response.statusCode);
-      response.on('data', resolve);
       response.on('error', reject);
+      var buffers = [];
+      response.on('data', function(buffer) {
+        buffers.push(buffer);
+      });
+      response.on('end', function() {
+        var data = Buffer.concat(buffers);
+        var isRedirect = response.statusCode == 302;
+        if (!isRedirect) {
+          resolve(data);
+        } else {
+          console.log('Following redirect.');
+          var content = data.toString();
+          var match = /href="(.*)"/.exec(content);
+          if (match) {
+            downloadURL(match[1]).then(resolve).catch(reject);
+          } else {
+            reject(new Error('Unable to follow redirect:\n' + content));
+          }
+        }
+      });
     });
   });
 }
 
-// Used instead of download for debugging with a local zip file.
+// Used instead of download for debugging this script with a local zip file.
 function read() {
   var zipPath = 'web-platform-tests-master.zip';
   return new Promise(function(resolve, reject) {
@@ -111,16 +144,3 @@ function writeFile(file) {
     });
   });
 }
-
-module.exports = function() {
-  return clear().
-    then(download).
-    then(unzip).
-    then(function(filePromises) {
-      return Promise.all(filePromises.map(function(filePromise) {
-        return filePromise.
-          then(alterResourcePaths).
-          then(writeFile);
-      }));
-    });
-};
