@@ -104,6 +104,22 @@ function alterResourcePaths(file) {
   return file;
 }
 
+function writeFile(file) {
+  return ensureParentDirectory(file.path).then(function() {
+    return new Promise(function(resolve, reject) {
+      console.log('Writing file ' + file.path + '...');
+      var fs = require('fs');
+      fs.writeFile(file.path, file.content, function(error) {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
+    });
+  });
+}
+
 var directoryPromises = {'.': Promise.resolve()};
 function ensureParentDirectory(path) {
   var Path = require('path');
@@ -125,22 +141,6 @@ function makeDirectory(path) {
       } else {
         resolve();
       }
-    });
-  });
-}
-
-function writeFile(file) {
-  return ensureParentDirectory(file.path).then(function() {
-    return new Promise(function(resolve, reject) {
-      console.log('Writing file ' + file.path + '...');
-      var fs = require('fs');
-      fs.writeFile(file.path, file.content, function(error) {
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
-        }
-      });
     });
   });
 }
