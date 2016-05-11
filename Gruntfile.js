@@ -194,6 +194,7 @@ module.exports = function(grunt) {
       'test/karma-setup.js',
       config.src,
       config.test,
+      {pattern: '*.js', included: false, served: true, nocache: true},
       {pattern: 'test/**', included: false, served: true, nocache: true});
     if (configCallback) {
       configCallback(karmaConfig);
