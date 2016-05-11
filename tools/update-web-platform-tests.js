@@ -4,17 +4,21 @@ module.exports = function() {
     then(download).
     then(unzip).
     then(function(filePromises) {
-      return Promise.all(filePromises.map(function(filePromise) {
-        return filePromise.
-          then(alterResourcePaths).
-          then(writeFile);
-      }));
+      return Promise.all([
+        Promise.all(filePromises).then(writeTestList),
+        Promise.all(filePromises.map(function(filePromise) {
+          return filePromise.
+            then(alterResourcePaths).
+            then(writeFile);
+        })),
+      ]);
     });
 };
 
 var directoryPath = 'test/web-platform-tests/web-animations';
 var zipURL = 'https://github.com/w3c/web-platform-tests/archive/master.zip';
 var zipDirectoryPath = 'web-platform-tests-master/web-animations';
+var testListPath = 'test/web-platform-tests-list.js';
 
 function clear() {
   return new Promise(function(resolve, reject) {
@@ -99,9 +103,15 @@ function unzip(data) {
   });
 }
 
-function alterResourcePaths(file) {
-  file.content = file.content.replace(/\/resources\//g, '../../../resources/');
-  return file;
+function writeTestList(files) {
+  var htmlPaths = files.map(file => file.path).filter(path => /.html$/.test(path)).sort();
+  return writeFile({
+    path: testListPath,
+    content:
+      'var webPlatformTestsList = [\n' +
+      htmlPaths.map(path => '  "' + path + '",\n').join('') +
+      '];\n',
+  });
 }
 
 function writeFile(file) {
@@ -143,4 +153,9 @@ function makeDirectory(path) {
       }
     });
   });
+}
+
+function alterResourcePaths(file) {
+  file.content = file.content.replace(/\/resources\//g, '../../../resources/');
+  return file;
 }
