@@ -170,6 +170,19 @@ function makeDirectory(path) {
 }
 
 function alterResourcePaths(file) {
-  file.content = file.content.replace(/\/resources\//g, '../../../resources/');
+  // Replace /resource/ links with relative (../)+resource/ links.
+  // The resources directory lives under test/.
+  // Example: test/a/b/c.html accesses test/resources via ../../../resources.
+  if (!/test\//.test(file.path)) {
+    throw new Error('Expected test/ at start of file path, got ' + file.path);
+  }
+
+  var dotDots = '';
+  var dotDotCount = file.path.split('/').length - 2;
+  for (var i = 0; i < dotDotCount; i++) {
+    dotDots += '../';
+  }
+
+  file.content = file.content.replace(/="\/resources\//g, '="' + dotDots + 'resources/');
   return file;
 }
