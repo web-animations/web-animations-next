@@ -222,6 +222,17 @@ module.exports = function(grunt) {
     });
   });
 
+  grunt.registerTask('update-web-platform-tests', 'Replace the checked in web-platform-tests with the latest version', function() {
+    var done = this.async();
+    var updateWebPlatformTests = require('./tools/update-web-platform-tests.js');
+    updateWebPlatformTests().then(function() {
+      done(true);
+    }).catch(function(error) {
+      console.error(error);
+      done(false);
+    });
+  });
+
   grunt.task.registerMultiTask('sourceMapConcat', 'concat source files and produce combined source map',
     function() {
       var sources = this.data.sources.map(grunt.file.read);
