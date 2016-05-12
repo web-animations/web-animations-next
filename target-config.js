@@ -108,7 +108,11 @@
       'test/js/group-constructors.js',
       'test/js/keyframe-effect-constructor.js',
       'test/js/timeline.js',
-      'test/js/web-animations-next-animation.js');
+      'test/js/web-animations-next-animation.js',
+      // Imported web-platform-tests.
+      'test/web-platform-tests-list.js',
+      'test/web-platform-tests-failures.js',
+      'test/web-platform-tests-suite.js');
 
   // This object specifies the source and test files for different Web Animation build targets.
   var targetConfig = {

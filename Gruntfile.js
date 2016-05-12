@@ -190,7 +190,12 @@ module.exports = function(grunt) {
     var done = task.async();
     var karmaConfig = require('karma/lib/config').parseConfig(require('path').resolve('test/karma-config.js'), {});
     var config = targetConfig[task.target];
-    karmaConfig.files = ['test/karma-setup.js'].concat(config.src, config.test);
+    karmaConfig.files = [].concat(
+      'test/karma-setup.js',
+      config.src,
+      config.test,
+      {pattern: '*.js', included: false, served: true, nocache: true},
+      {pattern: 'test/**', included: false, served: true, nocache: true});
     if (configCallback) {
       configCallback(karmaConfig);
     }
@@ -219,6 +224,17 @@ module.exports = function(grunt) {
     runTests(this, function(karmaConfig) {
       karmaConfig.singleRun = true;
       karmaConfig.sauceLabs.testName = 'web-animation-next ' + target + ' Unit tests';
+    });
+  });
+
+  grunt.registerTask('update-web-platform-tests', 'Replace the checked in web-platform-tests with the latest version', function() {
+    var done = this.async();
+    var updateWebPlatformTests = require('./tools/update-web-platform-tests.js');
+    updateWebPlatformTests().then(function() {
+      done(true);
+    }).catch(function(error) {
+      console.error(error);
+      done(false);
     });
   });
 
