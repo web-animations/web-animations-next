@@ -18,7 +18,7 @@ var webPlatformTestsFailures = {
   //     "Failure message",
   // },
 
-  'test/web-platform-tests/web-animations/animatable/animate.html': {
+  "test/web-platform-tests/web-animations/animatable/animate.html": {
     "Element.animate() creates an Animation object":
       "assert_equals: Returned object is an Animation expected \"[object Animation]\" but got \"[object Object]\"",
 

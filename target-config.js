@@ -100,16 +100,16 @@
       'test/js/transform-handler.js',
       'test/js/visibility-handler.js'];
 
-  // var webAnimationsNextTest = webAnimations1Test.concat(
-  //     'test/js/effect-callback.js',
-  //     'test/js/group-animation-cancel-event.js',
-  //     'test/js/group-animation-finish-event.js',
-  //     'test/js/group-animation.js',
-  //     'test/js/group-constructors.js',
-  //     'test/js/keyframe-effect-constructor.js',
-  //     'test/js/timeline.js',
-  //     'test/js/web-animations-next-animation.js',
-  var webAnimationsNextTest = [].concat(
+  var webAnimationsNextTest = webAnimations1Test.concat(
+      'test/js/effect-callback.js',
+      'test/js/group-animation-cancel-event.js',
+      'test/js/group-animation-finish-event.js',
+      'test/js/group-animation.js',
+      'test/js/group-constructors.js',
+      'test/js/keyframe-effect-constructor.js',
+      'test/js/timeline.js',
+      'test/js/web-animations-next-animation.js',
+      // Imported web-platform-tests.
       'test/web-platform-tests-list.js',
       'test/web-platform-tests-failures.js',
       'test/web-platform-tests-suite.js');
