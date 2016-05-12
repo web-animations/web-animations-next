@@ -313,7 +313,7 @@ var webPlatformTestsFailures = {
       webPlatformTestsFlakyResult,
 
     "changed iterations immediately updates its computed styles":
-      "assert_equals: set 2 iterations expected \"0\" but got \"0.001\"",
+      webPlatformTestsFlakyResult,
 
     "change currentTime when fill forwards and endDelay is positive":
       "assert_equals: set currentTime just a little before duration expected \"0.0001\" but got \"0\"",
