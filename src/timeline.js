@@ -54,7 +54,7 @@
       // effect's children, and Animation.play is also recursive. We only need to call play on each
       // animation in the tree once.
       animation._updatePromises();
-      animation._animation.play();
+      animation._play();
       animation._updatePromises();
       return animation;
     },

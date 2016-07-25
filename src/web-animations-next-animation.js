@@ -38,7 +38,7 @@
     this._oldPlayState = 'idle';
     this._rebuildUnderlyingAnimation();
     // Animations are constructed in the idle state.
-    this._animation.cancel();
+    this._cancel();
     this._updatePromises();
   };
 
@@ -300,6 +300,12 @@
       });
       this._updatePromises();
     },
+    _play: function() {
+      this._animation.play();
+      this._childAnimations.forEach(function(child) {
+        child._play();
+      });
+    },
     pause: function() {
       this._updatePromises();
       if (this.currentTime) {
@@ -325,6 +331,12 @@
       this._register();
       this._removeChildAnimations();
       this._updatePromises();
+    },
+    _cancel: function() {
+      this._animation.cancel();
+      this._childAnimations.forEach(function(child) {
+        child._cancel();
+      });
     },
     reverse: function() {
       this._updatePromises();

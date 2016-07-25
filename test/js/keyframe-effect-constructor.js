@@ -354,4 +354,16 @@ suite('keyframe-effect-constructor', function() {
     effect.timing.iterations = 2;
     assert.closeTo(Number(getComputedStyle(target).opacity), 0.75, 0.01, 't=125 after setting iterations');
   });
+
+  test('Allow partial keyframes when duration is zero', function() {
+    var target = document.createElement('div');
+    document.body.appendChild(target);
+    var effect = new KeyframeEffect(
+        target,
+        {opacity: 0},
+        {fill: 'forwards'});
+    var animation = document.timeline.play(effect);
+    tick(1);
+    assert.equal(getComputedStyle(target).opacity, 0);
+  });
 });

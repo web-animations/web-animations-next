@@ -67,6 +67,9 @@
       shared.deprecated('Custom KeyframeEffect', '2015-06-22', 'Use KeyframeEffect.onsample instead.');
       this._normalizedKeyframes = effectInput;
     } else {
+      if (!Array.isArray(effectInput) && this._timing.duration === 0) {
+        effectInput = [effectInput, effectInput];
+      }
       this._normalizedKeyframes = new KeyframeList(effectInput);
     }
     this._keyframes = effectInput;
