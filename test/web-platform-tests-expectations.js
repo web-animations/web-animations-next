@@ -167,16 +167,13 @@ module.exports = {
           'KeyframeEffectReadOnly is not defined',
 
       'Test finish() while pause-pending with negative playbackRate':
-          'assert_equals: The play state of a pause-pending animation should become "finished" after finish() is called expected "finished" but got "paused"',
+          'FLAKY_TEST_RESULT',
 
       'Test finish() while pause-pending with positive playbackRate':
-          'assert_equals: The play state of a pause-pending animation should become "finished" after finish() is called expected "finished" but got "paused"',
-
-      'Test finish() while paused':
-          'assert_equals: The play state of a paused animation should become "finished" after finish() is called expected "finished" but got "paused"',
+          'FLAKY_TEST_RESULT',
 
       'Test finish() while play-pending':
-          'assert_approx_equals: The start time of a play-pending animation should be set after calling finish() expected NaN +/- 0.0005 but got 0',
+          'FLAKY_TEST_RESULT',
 
       'Test finishing of animation with a current time past the effect end':
           'animation.effect.getComputedTiming is not a function',
