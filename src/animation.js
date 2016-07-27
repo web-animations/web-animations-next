@@ -172,10 +172,10 @@
       this._paused = true;
     },
     finish: function() {
-      var end = this._playbackRate > 0 ? this._totalDuration : 0;
-      this.currentTime = end;
+      var limit = this._playbackRate > 0 ? this._totalDuration : 0;
+      this.currentTime = limit;
       if (this.startTime === null) {
-        this._startTime = this._timeline.currentTime - end / this._playbackRate;
+        this._startTime = this._timeline.currentTime - limit / this._playbackRate;
       }
       this._currentTimePending = false;
       this._idle = false;
