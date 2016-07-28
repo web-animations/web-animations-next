@@ -172,11 +172,15 @@
       this._paused = true;
     },
     finish: function() {
-      if (this._idle)
-        return;
-      this.currentTime = this._playbackRate > 0 ? this._totalDuration : 0;
-      this._startTime = this._totalDuration - this.currentTime;
+      var limit = this._playbackRate > 0 ? this._totalDuration : 0;
+      this.currentTime = limit;
+      if (this.startTime === null) {
+        this._startTime = this._timeline.currentTime - limit / this._playbackRate;
+      }
       this._currentTimePending = false;
+      this._idle = false;
+      this._paused = false;
+      this._finished = true;
       scope.invalidateEffects();
     },
     cancel: function() {

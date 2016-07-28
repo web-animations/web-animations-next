@@ -318,12 +318,12 @@ suite('animation', function() {
     tick(1000);
     var a = document.body.animate([], 2000);
     a.finish();
-    assert.equal(a.startTime, 0);
+    assert.equal(a.startTime, -1000);
     assert.equal(a.currentTime, 2000);
     a.reverse();
     a.finish();
     assert.equal(a.currentTime, 0);
-    assert.equal(a.startTime, 2000);
+    assert.equal(a.startTime, 1000);
     tick(2000);
   });
   test('cancelling clears all effects', function() {
@@ -494,13 +494,13 @@ suite('animation', function() {
     assert.equal(a.startTime, null);
     tick(1);
     a.finish();
-    assert.equal(a.playState, 'idle');
-    assert.equal(a.currentTime, null);
-    assert.equal(a.startTime, null);
+    assert.equal(a.playState, 'finished');
+    assert.equal(a.currentTime, 300);
+    assert.equal(a.startTime, -299);
     tick(2);
-    assert.equal(a.playState, 'idle');
-    assert.equal(a.currentTime, null);
-    assert.equal(a.startTime, null);
+    assert.equal(a.playState, 'finished');
+    assert.equal(a.currentTime, 300);
+    assert.equal(a.startTime, -299);
   });
   test('Pause after cancel', function() {
     var a = document.body.animate([], 300);
