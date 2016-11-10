@@ -18,7 +18,8 @@ is the default target for pull requests.
 1. Run `grunt` to build the polyfill.
 1. Run `grunt test` to run polyfill and web-platform-tests tests.
 1. Commit changes to your fork.
-1. Create a pull request from your fork of web-animations-js to web-animations/web-animations-js/dev.
+1. Create a pull request from your fork of web-animations-js to
+   [web-animations/web-animations-js/dev](https://github.com/web-animations/web-animations-js/tree/dev).
 
 
 ## Debugging tests
