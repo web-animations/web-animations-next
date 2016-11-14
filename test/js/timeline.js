@@ -50,4 +50,13 @@ suite('timeline-tests', function() {
     animation.play();
     assert.equal(document.timeline.getAnimations().length, 1);
   });
+
+  test('getAnimationPlayers returns fill forwards animation', function() {
+    tick(90);
+    var player = document.body.animate([], {duration: 100, fill: 'forwards'});
+    tick(300);
+    assert.equal(document.timeline.getAnimationPlayers().length, 1);
+    tick(450);
+    assert.equal(document.timeline.getAnimationPlayers().length, 1);
+  });
 });
