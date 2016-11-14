@@ -137,7 +137,7 @@
     _constructChildAnimations: function() {
       if (!this.effect || !this._isGroup)
         return;
-      var offset = this.effect._timing.delay;
+
       this._removeChildAnimations();
       this.effect.children.forEach(function(child) {
         var childAnimation = scope.timeline._play(child);
@@ -146,12 +146,11 @@
         if (this._paused)
           childAnimation.pause();
         child._animation = this.effect._animation;
-
-        this._arrangeChildren(childAnimation, offset);
-
-        if (this.effect instanceof window.SequenceEffect)
-          offset += scope.groupChildDuration(child);
       }.bind(this));
+
+      if (!this.effect._parent) {
+        this._updateChildren();
+      }
     },
     _arrangeChildren: function(childAnimation, offset) {
       if (this.startTime === null) {
